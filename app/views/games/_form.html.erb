@@ -1,0 +1,400 @@
+<%= form_with(model: @game, local: true, html: {
+  class: "bg-white rounded-lg shadow-md p-6",
+  "data-opponent-stadiums": @opponent_stadiums_map.to_json,
+  "data-our-team-stadium-id": @our_team&.stadium_id
+}) do |form| %>
+
+  <% if @game.errors.any? %>
+    <div id="error_explanation" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <strong class="font-bold">入力内容にエラーがあります:</strong>
+      <ul class="list-disc list-inside mt-2">
+        <% @game.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div>
+      <%= form.label :game_date, "試合日", class: "block font-semibold mb-2" %>
+      <div class="flex items-center">
+        <button type="button" id="date-minus-btn" class="px-3 py-2 border rounded-l-lg bg-gray-100 hover:bg-gray-200">-</button>
+        <%= form.date_field :game_date, class: "w-full p-2 border-t border-b" %>
+        <button type="button" id="date-plus-btn" class="px-3 py-2 border rounded-r-lg bg-gray-100 hover:bg-gray-200">+</button>
+      </div>
+    </div>
+    <div>
+      <%= form.label :opponent_id, "対戦相手", class: "block font-semibold mb-2" %>
+      <%= form.collection_select :opponent_id, @opponents, :id, :name, { prompt: "選択してください" }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+    </div>
+    <div>
+      <%= form.label :home_away, "先攻/後攻", class: "block font-semibold mb-2" %>
+      <%= form.select :home_away, [["ビジター (先攻)", "先攻"], ["ホーム (後攻)", "後攻"]], {}, { class: "w-full p-2 border rounded-lg bg-white" } %>
+    </div>
+    <div>
+      <%= form.label :stadium_id, "球場", class: "block font-semibold mb-2" %>
+      <%= form.collection_select :stadium_id, @stadiums, :id, :name, { include_blank: "未選択" }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+    </div>
+  </div>
+
+  <h2 class="text-xl font-bold mb-4 border-b pb-2">スコアボード</h2>
+
+  <div id="ocr-drop-zone" class="mb-4 p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition">
+    <p class="text-gray-500">ここに画像をドラッグ＆ドロップ、またはペースト</p>
+    <p class="text-sm text-gray-400 my-2">または</p>
+    <button type="button" id="ocr-button" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+      ファイルを選択して取り込む
+    </button>
+    <input type="file" id="ocr-file-input" class="hidden" accept="image/*">
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full border-collapse">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="p-2 text-left font-semibold">チーム</th>
+          <% 18.times do |i| %>
+            <th class="p-2 text-center font-semibold inning-header <%= 'hidden' if i >= 9 %>"><%= i + 1 %></th>
+          <% end %>
+          <th class="p-2 text-center font-semibold bg-gray-200">R</th>
+          <th class="p-2 text-center font-semibold bg-gray-200">H</th>
+          <th class="p-2 text-center font-semibold bg-gray-200">E</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr id="top-row">
+          <td class="p-2 text-left font-medium" id="top-team-name-display"></td>
+           <% 18.times do |i| %>
+            <td class="p-1 inning-cell <%= 'hidden' if i >= 9 %>">
+              <%= text_field_tag "top_score_details_#{i}", nil, class: "w-10 p-2 text-center border rounded-md score-input top-score" %>
+            </td>
+          <% end %>
+          <td class="p-1 bg-gray-50">
+            <span id="total-score-top" class="w-12 p-2 text-center block bg-gray-200 font-bold rounded-md">0</span>
+            <%= hidden_field_tag 'top_score', 0, id: 'total-score-top-hidden' %>
+          </td>
+          <td class="p-1 bg-gray-50"><%= number_field_tag 'top_hits', nil, class: "w-12 p-2 text-center border rounded-md total-hits-top" %></td>
+          <td class="p-1 bg-gray-50"><%= number_field_tag 'top_errors', nil, class: "w-12 p-2 text-center border rounded-md total-errors-top" %></td>
+        </tr>
+        <tr id="bottom-row">
+          <td class="p-2 text-left font-medium" id="bottom-team-name-display"></td>
+           <% 18.times do |i| %>
+            <td class="p-1 inning-cell <%= 'hidden' if i >= 9 %>">
+              <%= text_field_tag "bottom_score_details_#{i}", nil, class: "w-10 p-2 text-center border rounded-md score-input bottom-score" %>
+            </td>
+          <% end %>
+          <td class="p-1 bg-gray-50">
+            <span id="total-score-bottom" class="w-12 p-2 text-center block bg-gray-200 font-bold rounded-md">0</span>
+            <%= hidden_field_tag 'bottom_score', 0, id: 'total-score-bottom-hidden' %>
+          </td>
+          <td class="p-1 bg-gray-50"><%= number_field_tag 'bottom_hits', nil, class: "w-12 p-2 text-center border rounded-md total-hits-bottom" %></td>
+          <td class="p-1 bg-gray-50"><%= number_field_tag 'bottom_errors', nil, class: "w-12 p-2 text-center border rounded-md total-errors-bottom" %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button type="button" id="add-inning-button" class="mt-2 text-sm text-blue-600 hover:underline">+ 延長イニングを追加</button>
+
+  <div class="mt-8 flex items-center gap-4">
+    <%= form.submit "この内容で保存する", class: "bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition cursor-pointer" %>
+    <%= link_to 'キャンセル', games_path, class: "text-gray-600 hover:underline" %>
+  </div>
+<% end %>
+
+<script>
+document.addEventListener('turbo:load', () => {
+  // ▼▼▼ 修正箇所 ▼▼▼
+  // グローバルなフラグをチェックし、既にリスナーが登録済みなら何もしない
+  if (window.ocrEventListenersAttached) {
+    console.log('OCR event listeners are already attached. Skipping setup.');
+    return;
+  }
+  // ▲▲▲ 修正ここまで ▲▲▲
+  
+  const gameForm = document.querySelector('form');
+  if (!gameForm) return;
+
+  // --- DOM Elements ---
+  const opponentSelect = document.getElementById('game_opponent_id');
+  const homeAwaySelect = document.getElementById('game_home_away');
+  const topRow = document.getElementById('top-row');
+  const bottomRow = document.getElementById('bottom-row');
+  const addInningButton = document.getElementById('add-inning-button');
+  const dateInput = document.getElementById('game_game_date');
+  const plusBtn = document.getElementById('date-plus-btn');
+  const minusBtn = document.getElementById('date-minus-btn');
+  const ocrDropZone = document.getElementById('ocr-drop-zone');
+  const ocrButton = document.getElementById('ocr-button');
+  const ocrFileInput = document.getElementById('ocr-file-input');
+
+  // --- Initial Data ---
+  const ourTeamName = "<%= @our_team&.name || 'チーム未登録' %>";
+  const initialGameData = {
+    our: {
+      score_details: <%= raw @game.our_score_details.to_json %>,
+      score: "<%= @game.our_score %>",
+      hits: "<%= @game.our_hits %>",
+      errors: "<%= @game.our_errors %>"
+    },
+    opponent: {
+      score_details: <%= raw @game.opponent_score_details.to_json %>,
+      score: "<%= @game.opponent_score %>",
+      hits: "<%= @game.opponent_hits %>",
+      errors: "<%= @game.opponent_errors %>"
+    }
+  };
+
+  // --- Helper Functions ---
+  const getRowValues = (row) => {
+    const values = { score_details: [] };
+    row.querySelectorAll('.score-input').forEach(i => values.score_details.push(i.value));
+    values.hits = row.querySelector('[class*="total-hits-"]').value;
+    values.errors = row.querySelector('[class*="total-errors-"]').value;
+    return values;
+  };
+
+  const setRowValues = (row, data) => {
+    if (!data) return;
+    
+    // イニングスコアをセット
+    if (data.score_details) {
+      row.querySelectorAll('.score-input').forEach((input, i) => {
+        if (data.score_details[i] !== undefined) {
+          input.value = data.score_details[i];
+        }
+      });
+    }
+    
+    // 安打(H)と失策(E)をセット
+    const hitsInput = row.querySelector('[class*="total-hits-"]');
+    if (hitsInput && data.hits !== undefined) {
+      hitsInput.value = data.hits;
+    }
+
+    const errorsInput = row.querySelector('[class*="total-errors-"]');
+    if (errorsInput && data.errors !== undefined) {
+      errorsInput.value = data.errors;
+    }
+  };
+
+  const updateNameAttributes = (row, prefix) => {
+    row.querySelectorAll('.score-input').forEach((input, i) => input.name = `game[${prefix}_score_details][]`);
+    row.querySelector('[id*="-hidden"]').name = `game[${prefix}_score]`; // hidden_field を対象にする
+    row.querySelector('[class*="total-hits-"]').name = `game[${prefix}_hits]`;
+    row.querySelector('[class*="total-errors-"]').name = `game[${prefix}_errors]`;
+  };
+
+  const updateScoreboard = () => {
+    const isHome = homeAwaySelect.value === '後攻';
+    const opponentName = opponentSelect.options[opponentSelect.selectedIndex]?.text || '相手チーム';
+    
+    const topValues = getRowValues(topRow);
+    const bottomValues = getRowValues(bottomRow);
+
+    const wasOurTeamOnTop = topRow.querySelector('#top-team-name-display').textContent === ourTeamName;
+    const ourData = wasOurTeamOnTop ? topValues : bottomValues;
+    const opponentData = wasOurTeamOnTop ? bottomValues : topValues;
+    
+    document.getElementById('top-team-name-display').textContent = isHome ? opponentName : ourTeamName;
+    document.getElementById('bottom-team-name-display').textContent = isHome ? ourTeamName : opponentName;
+    
+    if (isHome) {
+      setRowValues(topRow, opponentData);
+      setRowValues(bottomRow, ourData);
+      updateNameAttributes(topRow, 'opponent');
+      updateNameAttributes(bottomRow, 'our');
+    } else {
+      setRowValues(topRow, ourData);
+      setRowValues(bottomRow, opponentData);
+      updateNameAttributes(topRow, 'our');
+      updateNameAttributes(bottomRow, 'opponent');
+    }
+    calculateAllTotals();
+  };
+
+  const calculateTotal = (row) => {
+    const totalDisplay = row.querySelector('[id*="total-score-"]'); // spanタグ
+    const totalHiddenInput = row.querySelector('[id*="-hidden"]');     // hidden_fieldタグ
+
+    const totalValue = Array.from(row.querySelectorAll('.score-input')).reduce((total, input) => {
+      const val = parseInt(input.value, 10);
+      return total + (isNaN(val) ? 0 : val);
+    }, 0);
+
+    if (totalDisplay) totalDisplay.textContent = totalValue;
+    if (totalHiddenInput) totalHiddenInput.value = totalValue;
+  };
+  
+  const calculateAllTotals = () => {
+    calculateTotal(topRow);
+    calculateTotal(bottomRow);
+  };
+  
+  const setupPage = () => {
+    const isHome = homeAwaySelect.value === '後攻';
+    const ourInitialData = { ...initialGameData.our, total_score: initialGameData.our.score, score_details: initialGameData.our.score_details };
+    const oppInitialData = { ...initialGameData.opponent, total_score: initialGameData.opponent.score, score_details: initialGameData.opponent.score_details };
+
+    setRowValues(topRow, isHome ? oppInitialData : ourInitialData);
+    setRowValues(bottomRow, isHome ? ourInitialData : oppInitialData);
+    updateScoreboard();
+  };
+
+  setupPage();
+
+  // --- Event Listeners ---
+  [topRow, bottomRow].forEach(row => {
+    row.querySelectorAll('.score-input').forEach(input => {
+      input.addEventListener('input', () => calculateTotal(row));
+    });
+  });
+
+  opponentSelect.addEventListener('change', updateScoreboard);
+  homeAwaySelect.addEventListener('change', updateScoreboard);
+
+  // --- Extra Innings ---
+  let visibleInnings = 9;
+  const showInning = (inningNumber) => {
+    if (inningNumber >= 18) return;
+    const inningHeaders = document.querySelectorAll('.inning-header');
+    const inningCellsTop = document.querySelectorAll('#top-row .inning-cell');
+    const inningCellsBottom = document.querySelectorAll('#bottom-row .inning-cell');
+    
+    if (inningHeaders[inningNumber] && inningCellsTop[inningNumber] && inningCellsBottom[inningNumber]) {
+      inningHeaders[inningNumber].classList.remove('hidden');
+      inningCellsTop[inningNumber].classList.remove('hidden');
+      inningCellsBottom[inningNumber].classList.remove('hidden');
+    }
+  };
+
+  addInningButton.addEventListener('click', () => {
+    if (visibleInnings < 18) {
+      showInning(visibleInnings);
+      visibleInnings++;
+      if (visibleInnings >= 18) addInningButton.style.display = 'none';
+    }
+  });
+  
+  // --- Date +/- Buttons ---
+  const changeDate = (days) => {
+    if (!dateInput.value) return;
+    const currentDate = new Date(dateInput.value);
+    currentDate.setDate(currentDate.getDate() + days);
+    dateInput.value = currentDate.toISOString().split('T')[0];
+  };
+
+  if(plusBtn) plusBtn.addEventListener('click', () => changeDate(1));
+  if(minusBtn) minusBtn.addEventListener('click', () => changeDate(-1));
+
+  // --- OCR Functionality ---
+  let isOcrProcessing = false;
+
+  const handleOcrFile = async (file) => {
+    if (isOcrProcessing) {
+      console.log('OCR process already running. Skipping subsequent call.');
+      return;
+    }
+    if (!file || !file.type.startsWith('image/')) {
+        alert("有効な画像ファイルを選択してください。");
+        return;
+    }
+
+    isOcrProcessing = true;
+    ocrButton.textContent = '解析中...';
+    ocrButton.disabled = true;
+    ocrDropZone.classList.add('cursor-wait', 'bg-blue-100');
+
+    const formData = new FormData();
+    formData.append('image', file);
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+    try {
+      const response = await fetch('/games/ocr_score', {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'OCRの解析に失敗しました。');
+      }
+
+      const ocrData = await response.json();
+      
+      if (!ocrData || !ocrData.top_team || !ocrData.bottom_team) {
+        throw new Error('OCRデータの取得に失敗しました。画像の形式を変えるか、時間をおいて再度お試しください。');
+      }
+      
+      setRowValues(topRow, ocrData.top_team);
+      setRowValues(bottomRow, ocrData.bottom_team);
+      
+      const topInningsCount = ocrData.top_team.score_details.length;
+      const bottomInningsCount = ocrData.bottom_team.score_details.length;
+      const maxInnings = Math.max(topInningsCount, bottomInningsCount);
+
+      if (maxInnings > 9) {
+        for (let i = 9; i < maxInnings; i++) {
+          showInning(i);
+        }
+        visibleInnings = maxInnings;
+        if (visibleInnings >= 18) {
+            addInningButton.style.display = 'none';
+        }
+      }
+
+      calculateAllTotals();
+      alert('OCRの取り込みが完了しました。');
+
+    } catch (error) {
+      console.error('OCR Error:', error);
+      alert(error.message);
+    } finally {
+      isOcrProcessing = false;
+      ocrButton.textContent = 'ファイルを選択して取り込む';
+      ocrButton.disabled = false;
+      ocrDropZone.classList.remove('cursor-wait', 'bg-blue-100');
+      ocrFileInput.value = '';
+    }
+  };
+
+  if (ocrDropZone && ocrButton && ocrFileInput) {
+    ocrDropZone.addEventListener('click', () => ocrFileInput.click());
+    ocrFileInput.addEventListener('change', (event) => handleOcrFile(event.target.files[0]));
+
+    // Drag and Drop Events
+    ocrDropZone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      ocrDropZone.classList.add('border-blue-500', 'bg-blue-50');
+    });
+    ocrDropZone.addEventListener('dragleave', () => {
+      ocrDropZone.classList.remove('border-blue-500', 'bg-blue-50');
+    });
+    ocrDropZone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      ocrDropZone.classList.remove('border-blue-500', 'bg-blue-50');
+      const file = event.dataTransfer.files[0];
+      handleOcrFile(file);
+    });
+
+    // Paste Event
+    document.addEventListener('paste', (event) => {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const file = item.getAsFile();
+          handleOcrFile(file);
+          break; 
+        }
+      }
+    });
+  }
+  
+  // ▼▼▼ 修正箇所 ▼▼▼
+  // リスナーが登録されたことを示すフラグを立てる
+  window.ocrEventListenersAttached = true;
+  console.log('OCR event listeners have been attached.');
+  // ▲▲▲ 修正ここまで ▲▲▲
+});
+</script>

@@ -1,0 +1,92 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-6">各種マスタ設定</h1>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    
+    <!-- 選手マスタカード -->
+    <%= link_to players_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">選手マスタ</h2>
+        <p class="text-gray-600 mt-2">選手の個人情報やステータスを登録・編集します。</p>
+      </div>
+    <% end %>
+
+    <!-- 背番号なし選手カード -->
+    <%= link_to no_jersey_number_players_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">背番号なし選手</h2>
+        <p class="text-gray-600 mt-2">背番号が未登録の選手を一覧表示し、編集・削除します。</p>
+      </div>
+    <% end %>
+
+    <!-- 対戦相手マスタカード -->
+    <%= link_to opponents_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">対戦相手マスタ</h2>
+        <p class="text-gray-600 mt-2">対戦相手の名称や本拠地などを登録・編集します。</p>
+      </div>
+    <% end %>
+
+    <!-- 球場マスタカード -->
+    <%= link_to stadiums_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">球場マスタ</h2>
+        <p class="text-gray-600 mt-2">試合で利用する球場の名称を登録・編集します。</p>
+      </div>
+    <% end %>
+
+    <!-- タイトルマスタカード -->
+    <%= link_to awards_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">タイトルマスタ</h2>
+        <p class="text-gray-600 mt-2">年度ごとのタイトル受賞者を設定・管理します。</p>
+      </div>
+    <% end %>
+
+    <!-- 選手一括登録カード -->
+    <%# ▼▼▼【ここを修正】▼▼▼ %>
+    <%= link_to new_player_import_path, class: "no-underline" do %>
+    <%# ▲▲▲【ここまで修正】▲▲▲ %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">選手一括登録 (OCR)</h2>
+        <p class="text-gray-600 mt-2">スクリーンショットから選手を一括で登録します。</p>
+      </div>
+    <% end %>
+
+    <!-- 選手マスタ取り込み (CSV/XLSX) カード -->
+    <%= link_to new_settings_csv_player_import_path, class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">選手マスタ取り込み (CSV/XLSX)</h2>
+        <p class="text-gray-600 mt-2">CSVまたはXLSXファイルから選手を一括で登録します。</p>
+      </div>
+    <% end %>
+    
+    <!-- 自チームマスタカード -->
+        <%# ▼▼▼【ここを修正】▼▼▼ %>
+    <%# 常に単一のチーム情報を編集するため、IDを渡して正しい編集パスを生成する %>
+    <%= link_to edit_our_team_path(OurTeam.first_or_create), class: "no-underline" do %>
+    <%# ▲▲▲【ここまで修正】▲▲▲ %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition">
+        <h2 class="text-xl font-semibold text-gray-800">自チームマスタ</h2>
+        <p class="text-gray-600 mt-2">自チームの基本情報（チーム名、アイコン、本拠地など）を設定します。</p>
+      </div>
+    <% end %>
+
+    <%# --- 以下の2つは、対応する機能が未実装のため、一旦無効なリンクにしています --- %>
+    <!-- 現実チーム成績マスタカード -->
+    <%= link_to "#", class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition bg-gray-50 opacity-50 cursor-not-allowed">
+        <h2 class="text-xl font-semibold text-gray-800">歴代現実チーム成績マスタ</h2>
+        <p class="text-gray-600 mt-2">比較用の、現実のチーム成績を登録・管理します。</p>
+      </div>
+    <% end %>
+    
+    <!-- 現実個人成績マスタカード -->
+    <%= link_to "#", class: "no-underline" do %>
+      <div class="border rounded-lg p-4 h-full hover:shadow-lg hover:border-blue-500 transition bg-gray-50 opacity-50 cursor-not-allowed">
+        <h2 class="text-xl font-semibold text-gray-800">歴代現実個人成績マスタ</h2>
+        <p class="text-gray-600 mt-2">比較用の、現実の個人成績を登録・管理します。</p>
+      </div>
+    <% end %>
+
+  </div>
+</div>

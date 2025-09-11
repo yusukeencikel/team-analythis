@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  best_order: one
+  player: one
+  batting_order: 1
+  fielding_position: MyString
+
+two:
+  best_order: two
+  player: two
+  batting_order: 1
+  fielding_position: MyString

@@ -1,0 +1,48 @@
+<div>
+  <h2 class="text-xl font-semibold mb-4">年度別 投手成績</h2>
+  <div class="overflow-x-auto bg-white rounded-lg shadow-md">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-2 text-left font-semibold">年度</th>
+          <th class="p-2 text-center font-semibold">防御率</th>
+          <th class="p-2 text-center font-semibold">登板</th>
+          <th class="p-2 text-center font-semibold">勝利</th>
+          <th class="p-2 text-center font-semibold">敗戦</th>
+          <th class="p-2 text-center font-semibold">セーブ</th>
+          <th class="p-2 text-center font-semibold">投球回</th>
+          <th class="p-2 text-center font-semibold">奪三振</th>
+          <th class="p-2 text-center font-semibold">WHIP</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y text-center">
+        <% @yearly_pitching_stats.each do |year, stats| %>
+          <tr class="hover:bg-gray-50">
+            <td class="p-2 text-left"><%= year %></td>
+            <td class="p-2 font-semibold"><%= format('%.2f', stats[:era]) %></td>
+            <td class="p-2"><%= stats[:appearances] %></td>
+            <td class="p-2"><%= stats[:wins] %></td>
+            <td class="p-2"><%= stats[:losses] %></td>
+            <td class="p-2"><%= stats[:saves] %></td>
+            <td class="p-2"><%= format('%.1f', stats[:innings_pitched]) %></td>
+            <td class="p-2"><%= stats[:strikeouts] %></td>
+            <td class="p-2 font-semibold"><%= format('%.2f', stats[:whip]) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot class="bg-gray-200 font-bold">
+        <tr>
+          <td class="p-2 text-left">通算</td>
+          <td class="p-2 text-center"><%= format('%.2f', @career_pitching_stats[:era]) %></td>
+          <td class="p-2 text-center"><%= @career_pitching_stats[:appearances] %></td>
+          <td class="p-2 text-center"><%= @career_pitching_stats[:wins] %></td>
+          <td class="p-2 text-center"><%= @career_pitching_stats[:losses] %></td>
+          <td class="p-2 text-center"><%= @career_pitching_stats[:saves] %></td>
+          <td class="p-2 text-center"><%= format('%.1f', @career_pitching_stats[:innings_pitched]) %></td>
+          <td class="p-2 text-center"><%= @career_pitching_stats[:strikeouts] %></td>
+          <td class="p-2 text-center"><%= format('%.2f', @career_pitching_stats[:whip]) %></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>

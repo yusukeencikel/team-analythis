@@ -1,0 +1,65 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6"><%= @year %>年 タイトル受賞者設定</h1>
+
+  <%= form_with url: award_path(@year), method: :patch, data: { turbo: false } do |form| %>
+    <div class="space-y-12">
+      <!-- Golden Glove and Best Nine -->
+      <div>
+        <h2 class="text-xl font-semibold mb-4">ゴールデングラブ & ベストナイン</h2>
+        <div class="grid grid-cols-3 gap-4">
+          <% @golden_glove_positions.each_with_index do |position, index| %>
+            <div>
+              <p class="font-bold"><%= position %></p>
+              <p>GG: <%= form.select "awards[ゴールデングラブ_#{position}_#{index}]", options_from_collection_for_select(@players, :id, :name, @awards["ゴールデングラブ_#{position}_#{index}"]&.first&.player_id), { include_blank: true }, { class: "w-40 bg-white" } %></p>
+              <p>B9: <%= form.select "awards[ベストナイン_#{position}_#{index}]", options_from_collection_for_select(@players, :id, :name, @awards["ベストナイン_#{position}_#{index}"]&.first&.player_id), { include_blank: true }, { class: "w-40 bg-white" } %></p>
+            </div>
+          <% end %>
+          <div>
+            <p class="font-bold">DH</p>
+            <p>B9: <%= form.select "awards[ベストナイン_DH]", options_from_collection_for_select(@players, :id, :name, @awards["ベストナイン_DH"]&.first&.player_id), { include_blank: true }, { class: "w-40 bg-white" } %></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Titles -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h2 class="text-xl font-semibold mb-4">野手タイトル</h2>
+          <div class="space-y-4">
+            <% @batter_titles.each do |title| %>
+              <div>
+                <label class="font-semibold"><%= title %></label>
+                <%= form.select "awards[#{title}]", options_from_collection_for_select(@players, :id, :name, @awards[title]&.first&.player_id), { include_blank: true }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-xl font-semibold mb-4">投手タイトル</h2>
+          <div class="space-y-4">
+            <% @pitcher_titles.each do |title| %>
+              <div>
+                <label class="font-semibold"><%= title %></label>
+                <%= form.select "awards[#{title}]", options_from_collection_for_select(@players, :id, :name, @awards[title]&.first&.player_id), { include_blank: true }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xl font-semibold mb-4">共通タイトル</h2>
+        <div>
+          <label class="font-semibold">MVP</label>
+          <%= form.select "awards[MVP]", options_from_collection_for_select(@players, :id, :name, @awards["MVP"]&.first&.player_id), { include_blank: true }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex items-center gap-4">
+      <%= form.submit "更新する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      <%= link_to "キャンセル", awards_path, class: "text-gray-600 hover:underline" %>
+    </div>
+  <% end %>
+</div>

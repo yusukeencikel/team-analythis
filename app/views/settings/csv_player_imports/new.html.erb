@@ -1,0 +1,46 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">選手マスタ取り込み (CSV/XLSX)</h1>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <%= form_with url: settings_csv_player_imports_path, multipart: true, class: "space-y-4" do |form| %>
+      <div>
+        <%= form.label :file, "ファイルを選択", class: "block font-semibold mb-2" %>
+        <%= form.file_field :file, accept: ".csv, .xlsx", required: true, class: "w-full p-2 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+      </div>
+
+      <div class="pt-4">
+        <%= form.submit "取り込む", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+        <%= link_to "キャンセル", settings_path, class: "text-gray-600 hover:underline ml-4" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-8 p-6 bg-gray-50 rounded-lg border">
+    <h2 class="font-semibold text-lg mb-3">フォーマットについて</h2>
+    <p class="mb-3">1行目はヘッダー行としてください。以下の列名を使用してください。</p>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border-collapse">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="px-4 py-2 border">名前 (必須)</th>
+            <th class="px-4 py-2 border">ポジション</th>
+            <th class="px-4 py-2 border">背番号</th>
+            <th class="px-4 py-2 border">利き腕</th>
+            <th class="px-4 py-2 border">打席</th>
+            <th class="px-4 py-2 border">生年月日 (YYYYMMDD形式)</th>
+            <th class="px-4 py-2 border">入団経緯</th>
+            <th class="px-4 py-2 border">ステータス</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <div class="mt-4">
+      <p class="font-semibold">注意点:</p>
+      <ul class="list-disc list-inside text-sm space-y-1 mt-2">
+        <li>CSV (.csv) または Excel (.xlsx) 形式のファイルに対応しています。</li>
+        <li>ファイルに記載されている「名前」が既にデータベースに存在する場合、その選手のデータは取り込まれません。</li>
+        <li>「ステータス」列に 'active' または 'inactive' を指定できます。指定がない場合、自動的に「現役」('active') になります。</li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+  <%# --- 1. ページヘッダー --- %>
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">投手成績入力</h1>
+      <p class="text-gray-500 mt-1">
+        対象試合: <%= @game.game_date.strftime('%Y年%m月%d日') %> vs <%= @game.opponent.name %>
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= link_to '試合詳細に戻る', game_path(@game), class: "text-gray-600 hover:text-gray-800" %>
+    </div>
+  </div>
+
+  <%# --- OCR取込 --- %>
+  <div class="my-6">
+    <div id="pitching-ocr-drop-zone" 
+         class="js-ocr-drop-zone max-w-xl mx-auto p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition"
+         data-ocr-url="<%= ocr_create_game_pitching_stats_path(@game) %>"
+         data-redirect-url="<%= game_pitching_stats_path(@game) %>">
+      <p class="text-gray-500">ここに画像をドラッグ＆ドロップ、またはペーストしてOCR取込</p>
+      <p class="text-sm text-gray-400 my-2">または</p>
+      <button type="button" class="js-ocr-button bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition">
+        ファイルを選択
+      </button>
+      <input type="file" class="js-ocr-file-input hidden" accept="image/*" multiple>
+    </div>
+  </div>
+
+  <%# --- 2. 成績入力フォーム --- %>
+  <%= form_with(model: @game, url: game_pitching_stats_path(@game), method: :post, id: 'pitching-stats-form', data: { turbo: false }) do |form| %>
+    <div class="bg-white shadow-md rounded-lg overflow-x-auto border border-gray-200">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-100 text-gray-600">
+  <tr>
+    <th class="p-2 text-left">名前</th>
+    <th class="p-2 text-center">登板順</th>
+    <th class="p-2 text-center">結果</th>
+    <th class="p-2 text-center">投球回</th>
+    <th class="p-2 text-center">打者</th>
+    <th class="p-2 text-center">投球数</th>
+    <th class="p-2 text-center">被安打</th>
+    <th class="p-2 text-center">奪三振</th>
+    <th class="p-2 text-center">与四球</th>
+    <th class="p-2 text-center">失点</th>
+    <th class="p-2 text-center">自責点</th>
+    <th class="p-2 text-center">暴投</th>
+    <th class="p-2 text-center">被本塁打</th>
+  </tr>
+</thead>
+        <tbody id="pitching-stats-body" class="divide-y">
+          <%# --- 既存の成績データを表示 --- %>
+          <% @pitching_stats.each_with_index do |stat, index| %>
+            <%= render 'pitching_stat_row', stat: stat, index: index, players: @players %>
+          <% end %>
+
+          <%# --- OCRで読み込んだデータを表示 --- %>
+          <% if @ocr_data %>
+            <% @ocr_data.each_with_index do |stat, index| %>
+              <%= render 'pitching_stat_row', stat: stat, index: index + @pitching_stats.size, players: @players %>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# --- 3. アクションボタン --- %>
+    <div class="mt-6 flex items-center justify-between">
+      <button type="button" id="add-pitcher-button" class="bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300">
+        + 登板投手を追加
+      </button>
+      <div class="flex items-center gap-4">
+        <%= link_to 'キャンセル', game_path(@game), class: 'text-gray-600 hover:text-gray-800' %>
+        <%= form.submit 'この内容で登録する', class: 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg cursor-pointer transition duration-300' %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# --- 新しい行の雛形 --- %>
+  <template id="pitcher-row-template">
+    <%= render 'pitching_stat_row', stat: PitchingStat.new, index: '__INDEX__', players: @players %>
+  </template>
+
+  <%# --- JavaScript --- %>
+  <script>
+    document.addEventListener('turbo:load', () => {
+      // --- フォーム送信時に空の値を0に変換する処理 ---
+      const form = document.getElementById('pitching-stats-form');
+      if (form && !form.dataset.listenerAttached) {
+        form.addEventListener('submit', function(event) {
+          const numberInputs = form.querySelectorAll('tbody input[type="number"]');
+          numberInputs.forEach(input => {
+            if (input.value.trim() === '') {
+              input.value = '0';
+            }
+          });
+
+          const inningsInputs = form.querySelectorAll('tbody input[name*="[innings_pitched]"]');
+          inningsInputs.forEach(input => {
+            if (input.value.trim() === '') {
+              input.value = '0.0';
+            }
+          });
+        });
+        form.dataset.listenerAttached = 'true';
+      }
+
+      // --- 行を追加する処理 ---
+      const addButton = document.getElementById('add-pitcher-button');
+      if (addButton && !addButton.dataset.listenerAttached) {
+        addButton.addEventListener('click', () => {
+          const tableBody = document.getElementById('pitching-stats-body');
+          const newIndex = tableBody.getElementsByTagName('tr').length;
+
+          const template = document.getElementById('pitcher-row-template');
+          let newRowHtml = template.innerHTML;
+
+          newRowHtml = newRowHtml.replace(/__INDEX__/g, newIndex);
+
+          const newRow = tableBody.insertRow();
+          newRow.innerHTML = newRowHtml;
+          
+          const pitchingOrderInput = newRow.querySelector('[name*="[pitching_order]"]');
+          if (pitchingOrderInput) {
+            pitchingOrderInput.value = newIndex + 1;
+          }
+        });
+        addButton.dataset.listenerAttached = 'true';
+      }
+    });
+  </script>
+</div>
+

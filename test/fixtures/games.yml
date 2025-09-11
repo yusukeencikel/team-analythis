@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  game_date: 2025-09-08
+  day_night: MyString
+  home_away: MyString
+  our_score: 1
+  opponent_score: 1
+  our_score_details: MyString
+  opponent_score_details: MyString
+  opponent: one
+  stadium: one
+  winning_pitcher: one
+  losing_pitcher: one
+  saving_pitcher: one
+
+two:
+  game_date: 2025-09-08
+  day_night: MyString
+  home_away: MyString
+  our_score: 1
+  opponent_score: 1
+  our_score_details: MyString
+  opponent_score_details: MyString
+  opponent: two
+  stadium: two
+  winning_pitcher: two
+  losing_pitcher: two
+  saving_pitcher: two

@@ -1,0 +1,55 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">選手情報の一括編集</h1>
+
+  <%= form_with url: update_all_players_path, method: :patch do |form| %>
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名前</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">背番号</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ポジション</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">利き腕</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">打席</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">生年月日</th>
+            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @players.each do |player| %>
+            <%= fields_for "players[#{player.id}]", player do |p_form| %>
+              <tr>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.text_field :name, class: "w-full p-2 border rounded-lg text-sm" %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.text_field :jersey_number, class: "w-20 p-2 border rounded-lg text-sm" %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.select :position, ["投手", "捕手", "内野手", "外野手"], { include_blank: true }, class: "w-full p-2 border rounded-lg bg-white text-sm" %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.select :throwing_hand, ["右", "左"], { include_blank: true }, { class: "w-full p-2 border rounded-lg bg-white text-sm" } %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.select :batting_hand, ["右", "左", "両"], { include_blank: true }, { class: "w-full p-2 border rounded-lg bg-white text-sm" } %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.text_field :birthday, value: (player.birthday.strftime('%Y%m%d') if player.birthday), placeholder: "YYYYMMDD", class: "w-32 p-2 border rounded-lg text-sm" %>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <%= p_form.select :status, options_for_select([['現役', 'active'], ['退団', 'inactive']], player.status), {}, { class: "w-full p-2 border rounded-lg bg-white text-sm" } %>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-8 flex items-center gap-4">
+      <%= form.submit "まとめて更新する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      <%= link_to "キャンセル", players_path, class: "text-gray-600 hover:underline" %>
+    </div>
+  <% end %>
+</div>

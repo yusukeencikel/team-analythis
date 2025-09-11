@@ -1,0 +1,11 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-2">取込内容の確認・編集</h1>
+  <p class="text-gray-600 mb-6">OCRで読み取った内容です。ポジションを選択し、必要に応じて名前や背番号を修正してください。</p>
+
+  <%= form_with url: ocr_save_game_batting_stats_path(@game), method: :post do |form| %>
+    <%# ... (テーブル部分は player['name'] のように文字列キーで参照) ... %>
+  <% end %>
+</div>
+<script>
+  <%# ... (ポジション一括変更のJavaScriptは変更なし) ... %>
+</script>

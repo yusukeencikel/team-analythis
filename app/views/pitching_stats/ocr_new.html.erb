@@ -1,0 +1,29 @@
+<div class="max-w-lg mx-auto bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-6">投手成績OCR取込</h1>
+
+  <%# --- 共通の仕組みを使ったドラッグ＆ドロップエリア --- %>
+  <div class="js-ocr-drop-zone p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition"
+       data-ocr-url="<%= ocr_create_game_pitching_stats_path(@game) %>">
+    
+    <div class="mb-4 p-4 border-l-4 border-blue-500 bg-blue-50 text-left">
+      <h2 class="font-semibold">使い方:</h2>
+      <p class="text-sm text-gray-700">
+        投手成績のスコアボード画像を、このエリアにドラッグ＆ドロップ、ペースト、または下のボタンから選択してください。(複数選択可)
+      </p>
+    </div>
+
+    <p class="text-gray-500">ここに画像をドラッグ＆ドロップ、またはペースト</p>
+    <p class="text-sm text-gray-400 my-2">または</p>
+    
+    <button type="button" class="js-ocr-button bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition">
+      ファイルを選択して取り込む
+    </button>
+    
+    <%# JavaScriptがこのinputを裏側で使います %>
+    <input type="file" class="js-ocr-file-input hidden" accept="image/*" multiple>
+  </div>
+
+  <div class="mt-6">
+    <%= link_to "キャンセル", game_pitching_stats_path(@game), class: "text-gray-600 hover:underline" %>
+  </div>
+</div>

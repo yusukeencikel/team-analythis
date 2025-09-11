@@ -1,0 +1,163 @@
+<%#
+  ローカル変数:
+  - stats_collection: 表示する成績データのハッシュ or 配列
+  - category_title: (任意) カテゴリ列の見出し (例: "対戦チーム")
+  - show_total: (任意) 合計行を表示するかどうか (デフォルトはfalse)
+%>
+
+<% show_category = local_assigns.fetch(:show_category, true) %>
+<% show_total = local_assigns.fetch(:show_total, false) %>
+<% category_title = local_assigns.fetch(:category_title, "カテゴリ") %>
+
+<table class="min-w-full text-sm">
+  <thead class="bg-gray-100">
+    <tr>
+      <% if show_category %>
+        <th class="p-2 text-center font-semibold"><%= category_title %></th>
+      <% end %>
+      <th class="p-2 text-center font-semibold">防御率</th>
+      <th class="p-2 text-center font-semibold">登板</th>
+      <th class="p-2 text-center font-semibold">先発</th>
+      <th class="p-2 text-center font-semibold">完投</th>
+      <th class="p-2 text-center font-semibold">完封</th>
+      <th class="p-2 text-center font-semibold">無四球完投</th>
+      <th class="p-2 text-center font-semibold">勝</th>
+      <th class="p-2 text-center font-semibold">敗</th>
+      <th class="p-2 text-center font-semibold">セーブ</th>
+      <th class="p-2 text-center font-semibold">ホールド</th>
+      <th class="p-2 text-center font-semibold">QS</th>
+      <th class="p-2 text-center font-semibold">QS率</th>
+      <th class="p-2 text-center font-semibold">HQS</th>
+      <th class="p-2 text-center font-semibold">HQS率</th>
+      <th class="p-2 text-center font-semibold">投球回</th>
+      <th class="p-2 text-center font-semibold">被安打</th>
+      <th class="p-2 text-center font-semibold">被本塁打</th>
+      <th class="p-2 text-center font-semibold">奪三振</th>
+      <th class="p-2 text-center font-semibold">奪三振率</th>
+      <th class="p-2 text-center font-semibold">与四球</th>
+      <th class="p-2 text-center font-semibold">暴投</th>
+      <th class="p-2 text-center font-semibold">自責点</th>
+      <th class="p-2 text-center font-semibold">K/BB</th>
+      <th class="p-2 text-center font-semibold">WHIP</th>
+      <th class="p-2 text-center font-semibold">FIP</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y">
+    <% data_source = stats_collection.is_a?(Hash) ? stats_collection.sort.to_h : stats_collection %>
+    
+    <% total_stats = Hash.new(0) %>
+    <% data_source.each do |category_or_stats, stats_or_nil| %>
+      <%
+        stats = nil
+        category = nil
+        awards_for_year = []
+        if stats_or_nil # データソースがハッシュの場合
+          category = category_or_stats
+          stats = stats_or_nil
+          if defined?(awards_by_year) && awards_by_year
+            awards_for_year = awards_by_year[category.to_i] || []
+          end
+        else # データソースが配列の場合
+          stats = category_or_stats
+          if category_title == "年度" && stats.respond_to?(:year)
+            category = stats.year
+            if defined?(awards_by_year) && awards_by_year
+              awards_for_year = awards_by_year[category.to_i] || []
+            end
+          end
+        end
+        
+        if show_total
+          stats_hash = stats.is_a?(Hash) ? stats : stats.attributes
+          stats_hash.each do |key, value|
+            total_stats[key] += value if value.is_a?(Numeric)
+          end
+        end
+      %>
+      <tr class="hover:bg-gray-50 text-center">
+        <% if show_category %>
+          <td class="p-2 text-left font-semibold">
+            <% if category_title == "年度" %>
+              <%= link_to category, player_path(@player, stats: 'pitching', year: category), class: "text-blue-600 hover:underline" %>
+            <% elsif category_title == "月" %>
+              <%= "#{category.to_i}月" %>
+            <% else %>
+              <%= category %>
+            <% end %>
+          </td>
+        <% end %>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最優秀防御率') %>"><%= format('%.2f', stats[:era].to_f) %></td>
+        <td><%= stats[:appearances] %></td>
+        <td><%= stats[:starts] %></td>
+        <td><%= stats[:complete_games] %></td>
+        <td><%= stats[:shutouts] %></td>
+        <td><%= stats[:no_walk_complete_games] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最多勝') %>"><%= stats[:wins] %></td>
+        <td><%= stats[:losses] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最多セーブ') %>"><%= stats[:saves] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最優秀中継ぎ') %>"><%= stats[:holds] %></td>
+        <td><%= stats[:qs] %></td>
+        <td><%= format('%.2f', stats[:qs_rate].to_f) %></td>
+        <td><%= stats[:hqs] %></td>
+        <td><%= format('%.2f', stats[:hqs_rate].to_f) %></td>
+        <td><%= (stats[:outs_pitched].to_i / 3).to_s + '.' + (stats[:outs_pitched].to_i % 3).to_s %></td>
+        <td><%= stats[:hits_allowed] %></td>
+        <td><%= stats[:home_runs_allowed] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最多奪三振') %>"><%= stats[:strikeouts_pitched] %></td>
+        <td><%= format('%.2f', stats[:k_per_nine].to_f) %></td>
+        <td><%= stats[:walks_allowed] %></td>
+        <td><%= stats[:wild_pitches] %></td>
+        <td><%= stats[:earned_runs] %></td>
+        <td><%= format('%.2f', stats[:k_bb].to_f) %></td>
+        <td><%= format('%.2f', stats[:whip].to_f) %></td>
+        <td><%= format('%.2f', stats[:fip].to_f) %></td>
+      </tr>
+    <% end %>
+
+    <% if data_source.empty? %>
+      <tr><td colspan="26" class="p-4 text-center text-gray-500">表示できるデータがありません</td></tr>
+    <% elsif show_total %>
+      <tr class="font-bold bg-gray-200">
+        <% if show_category %>
+          <td class="p-2 text-center">合計</td>
+        <% end %>
+        <% total_outs_pitched_float = total_stats[:outs_pitched].to_f %>
+        <% total_innings_pitched_float = total_outs_pitched_float / 3 %>
+        <% total_era = total_innings_pitched_float > 0 ? (total_stats[:earned_runs].to_f * 9) / total_innings_pitched_float : 0 %>
+        <% total_qs_rate = total_stats[:starts] > 0 ? total_stats[:qs].to_f / total_stats[:starts] : 0 %>
+        <% total_hqs_rate = total_stats[:starts] > 0 ? total_stats[:hqs].to_f / total_stats[:starts] : 0 %>
+        <% total_k_per_nine = total_innings_pitched_float > 0 ? (total_stats[:strikeouts_pitched].to_f * 9) / total_innings_pitched_float : 0.0 %>
+        <% total_k_bb = total_stats[:walks_allowed].to_f > 0 ? total_stats[:strikeouts_pitched].to_f / total_stats[:walks_allowed].to_f : 0.0 %>
+        <% total_whip = total_innings_pitched_float > 0 ? (total_stats[:walks_allowed].to_f + total_stats[:hits_allowed].to_f) / total_innings_pitched_float : 0.0 %>
+        <% fip_constant = 3.20 %>
+        <% total_fip = total_innings_pitched_float > 0 ? (((13 * total_stats[:home_runs_allowed].to_f) + (3 * total_stats[:walks_allowed].to_f) - (2 * total_stats[:strikeouts_pitched].to_f)) / total_innings_pitched_float) + fip_constant : 0.0 %>
+        
+        <td class="text-center"><%= format('%.2f', total_era) %></td>
+        <td class="text-center"><%= total_stats[:appearances] %></td>
+        <td class="text-center"><%= total_stats[:starts] %></td>
+        <td class="text-center"><%= total_stats[:complete_games] %></td>
+        <td class="text-center"><%= total_stats[:shutouts] %></td>
+        <td class="text-center"><%= total_stats[:no_walk_complete_games] %></td>
+        <td class="text-center"><%= total_stats[:wins] %></td>
+        <td class="text-center"><%= total_stats[:losses] %></td>
+        <td class="text-center"><%= total_stats[:saves] %></td>
+        <td class="text-center"><%= total_stats[:holds] %></td>
+        <td class="text-center"><%= total_stats[:qs] %></td>
+        <td class="text-center"><%= format('%.2f', total_qs_rate) %></td>
+        <td class="text-center"><%= total_stats[:hqs] %></td>
+        <td class="text-center"><%= format('%.2f', total_hqs_rate) %></td>
+        <td class="text-center"><%= (total_stats[:outs_pitched].to_i / 3).to_s + '.' + (total_stats[:outs_pitched].to_i % 3).to_s %></td>
+        <td class="text-center"><%= total_stats[:hits_allowed] %></td>
+        <td class="text-center"><%= total_stats[:home_runs_allowed] %></td>
+        <td class="text-center"><%= total_stats[:strikeouts_pitched] %></td>
+        <td class="text-center"><%= format('%.2f', total_k_per_nine) %></td>
+        <td class="text-center"><%= total_stats[:walks_allowed] %></td>
+        <td class="text-center"><%= total_stats[:wild_pitches] %></td>
+        <td class="text-center"><%= total_stats[:earned_runs] %></td>
+        <td class="text-center"><%= format('%.2f', total_k_bb) %></td>
+        <td class="text-center"><%= format('%.2f', total_whip) %></td>
+        <td class="text-center"><%= format('%.2f', total_fip) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

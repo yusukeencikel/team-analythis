@@ -1,0 +1,391 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mx-auto p-4 lg:p-6 space-y-8">
+
+  <%# --- 選手情報ヘッダー --- %>
+  <div>
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-sm text-gray-500">#<%= @player.jersey_number %> <%= @player.position %></p>
+        <h1 class="text-4xl font-bold tracking-tight"><%= @player.name %></h1>
+        <div class="text-sm text-gray-500 mt-2">
+          <span><%= @player.position %></span> |
+          <span><%= player_age(@player.birthday, @current_season_year) %>歳</span> |
+          <span><%= @player.throwing_hand %>投<%= @player.batting_hand %>打</span>
+        </div>
+        <% if @player.join_background.present? %>
+          <div class="text-sm text-gray-500 mt-1">
+            入団経緯: <%= @player.join_background %>
+          </div>
+        <% end %>
+      </div>
+      <div class="flex-shrink-0">
+        <%= link_to '選手情報編集', edit_player_path(@player), class: "text-blue-600 hover:underline" %>
+        <% if @player.status == 'inactive' %>
+          <%= link_to 'ダミー成績を追加', add_dummy_stats_player_path(@player), class: "text-red-600 hover:underline ml-4" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# --- タイトル獲得歴 --- %>
+  <% if @awards.any? %>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+      <p class="font-bold">タイトル獲得歴</p>
+      <ul class="list-disc list-inside">
+        <% @awards.each do |award| %>
+          <li><%= award.year %>年 <%= award.name %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# --- 今シーズン/通算 成績切り替えタブ --- %>
+  <div class="border-b border-gray-200">
+    <nav class="-mb-px flex space-x-8" aria-label="Year Tabs">
+      <% if @player.status == 'active' %>
+        <%# 「今シーズン」へのリンク (yearパラメータなし) %>
+        <%= link_to "今シーズン成績 (#{@current_season_year}年)", 
+                    player_path(@player, stats: @stats_type, year: nil), 
+                    class: "py-4 px-1 text-base font-medium border-b-2 #{(@display_year != 'career' && @display_year == @current_season_year) || @year_param.blank? ? 'text-blue-600 border-blue-500' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+      <% end %>
+
+      <%# 「通算成績」へのリンク %>
+      <%= link_to '通算成績', 
+                  player_path(@player, stats: @stats_type, year: 'career'), 
+                  class: "py-4 px-1 text-base font-medium border-b-2 #{@display_year == 'career' ? 'text-blue-600 border-blue-500' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+    </nav>
+  </div>
+
+  <%# --- 野手/投手 成績切り替えタブ --- %>
+  <% if @player.has_pitching_stats? %>
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8" aria-label="Stats Tabs">
+        <%= link_to '野手成績', player_path(@player, stats: 'batting', year: @year_param), class: "py-4 px-1 text-base font-medium border-b-2 #{@stats_type == 'batting' ? 'text-gray-900 border-indigo-500' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+        <%= link_to '投手成績', player_path(@player, stats: 'pitching', year: @year_param), class: "py-4 px-1 text-base font-medium border-b-2 #{@stats_type == 'pitching' ? 'text-gray-900 border-indigo-500' : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+      </nav>
+    </div>
+  <% end %>
+
+  <%# --- 各成績のコンテンツ --- %>
+  <% if @stats_type == 'pitching' %>
+    <%# --- 投手成績タブの内容 --- %>
+    <% if @display_year == 'career' %>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">年度別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @yearly_stats, category_title: "年度", show_total: true, awards_by_year: @awards_by_year %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算対チーム別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_opponent, category_title: "対戦チーム", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算月別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @monthly_stats, category_title: "月", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算球場別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_stadium, category_title: "球場", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算ホーム/ビジター別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_home_away, category_title: "H/A", show_total: true %>
+        </div>
+      </div>
+    <% else %>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @stats_title %></h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: [@main_stats], show_category: false, show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">最近6試合の成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-2 text-left font-semibold">日付</th>
+                <th class="p-2 text-left font-semibold">対戦チーム</th>
+                <th class="p-2 text-center font-semibold">投球回</th>
+                <th class="p-2 text-center font-semibold">被安打</th>
+                <th class="p-2 text-center font-semibold">奪三振</th>
+                <th class="p-2 text-center font-semibold">四球</th>
+                <th class="p-2 text-center font-semibold">自責点</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <% if @recent_games_stats.present? && @recent_games_stats.any? %>
+                <% @recent_games_stats.each do |stat| %>
+                  <tr class="hover:bg-gray-50 text-center">
+                    <td class="p-2 text-left"><%= link_to stat.game.game_date.strftime('%-m/%-d'), game_path(stat.game.id) %></td>
+                    <td class="p-2 text-left"><%= stat.game.opponent.name %></td>
+                    <td><%= stat.innings_pitched %></td>
+                    <td><%= stat.hits_allowed %></td>
+                    <td><%= stat.strikeouts %></td>
+                    <td><%= stat.walks %></td>
+                    <td><%= stat.earned_runs %></td>
+                  </tr>
+                <% end %>
+              <% else %>
+                <tr><td colspan="7" class="p-4 text-center text-gray-500">最近の試合データがありません</td></tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">防御率推移グラフ</h3>
+        <div class="bg-white rounded-lg shadow p-4">
+          <canvas id="pitchingEraChart"></canvas>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 対チーム別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_opponent, category_title: "対戦チーム", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 月別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @monthly_stats, category_title: "月", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 球場別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_stadium, category_title: "球場", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 ホーム/ビジター別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'pitching_stats_table', stats_collection: @stats_by_home_away, category_title: "H/A", show_total: false %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <%# --- 野手成績タブの内容 --- %>
+    <% if @display_year == 'career' %>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">年度別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @yearly_stats, category_title: "年度", show_total: true, awards_by_year: @awards_by_year %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算対チーム別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_opponent, category_title: "対戦チーム", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算月別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @monthly_stats, category_title: "月", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算球場別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_stadium, category_title: "球場", show_total: true %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">通算ホーム/ビジター別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_home_away, category_title: "H/A", show_total: true %>
+        </div>
+      </div>
+    <% else %>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @stats_title %></h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: [@main_stats], show_category: false, show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">最近6試合の成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-2 text-left font-semibold">日付</th>
+                <th class="p-2 text-left font-semibold">対戦チーム</th>
+                <th class="p-2 text-center font-semibold">打数</th>
+                <th class="p-2 text-center font-semibold">安打</th>
+                <th class="p-2 text-center font-semibold">本塁打</th>
+                <th class="p-2 text-center font-semibold">打点</th>
+                <th class="p-2 text-center font-semibold">得点</th>
+                <th class="p-2 text-center font-semibold">三振</th>
+                <th class="p-2 text-center font-semibold">四球</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+                <% if @recent_games_stats.present? && @recent_games_stats.any? %>
+                  <% @recent_games_stats.each do |stat| %>
+                    <tr class="hover:bg-gray-50 text-center">
+                      <td class="p-2 text-left"><%= link_to stat.game.game_date.strftime('%-m/%-d'), game_path(stat.game.id) %></td>
+                      <td class="p-2 text-left"><%= stat.game.opponent.name %></td>
+                      <td><%= stat.at_bats %></td>
+                      <td><%= stat.hits %></td>
+                      <td><%= stat.home_runs %></td>
+                      <td><%= stat.rbi %></td>
+                      <td><%= stat.runs %></td>
+                      <td><%= stat.strikeouts %></td>
+                      <td><%= stat.walks %></td>
+                    </tr>
+                  <% end %>
+                <% else %>
+                  <tr><td colspan="9" class="p-4 text-center text-gray-500">最近の試合データがありません</td></tr>
+                <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2">打率推移グラフ</h3>
+        <div class="bg-white rounded-lg shadow p-4">
+          <canvas id="battingAverageChart"></canvas>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 対チーム別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_opponent, category_title: "対戦チーム", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 月別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @monthly_stats, category_title: "月", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 球場別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_stadium, category_title: "球場", show_total: false %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold mb-2"><%= @display_year %>年 ホーム/ビジター別成績</h3>
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
+          <%= render 'batting_stats_table', stats_collection: @stats_by_home_away, category_title: "H/A", show_total: false %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<%# --- グラフ描画用JavaScript --- %>
+<script>
+document.addEventListener('turbo:load', () => {
+  const ctxBatting = document.getElementById('battingAverageChart');
+  const ctxPitching = document.getElementById('pitchingEraChart');
+
+  // 野手成績グラフ
+  if (ctxBatting) {
+    if (window.myBattingChart) {
+      window.myBattingChart.destroy();
+    }
+    const chartData = JSON.parse('<%= @chart_data.to_json.html_safe rescue "{}" %>');
+    if (chartData && chartData.labels && chartData.labels.length > 0) {
+      window.myBattingChart = new Chart(ctxBatting, {
+        type: 'line',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: '打率',
+            data: chartData.data,
+            borderColor: 'rgba(59, 130, 246, 0.8)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.2
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(3).toString().replace(/^0/, '');
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '打率: ' + context.parsed.y.toFixed(3).toString().replace(/^0/, '');
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      ctxBatting.getContext('2d').fillText('グラフを表示するデータがありません', 10, 50);
+    }
+  }
+
+  // 投手成績グラフ
+  if (ctxPitching) {
+    if (window.myPitchingChart) {
+      window.myPitchingChart.destroy();
+    }
+    const chartData = JSON.parse('<%= @chart_data.to_json.html_safe rescue "{}" %>');
+    if (chartData && chartData.labels && chartData.labels.length > 0) {
+      window.myPitchingChart = new Chart(ctxPitching, {
+        type: 'line',
+        data: {
+          labels: chartData.labels,
+          datasets: [{
+            label: '防御率',
+            data: chartData.data,
+            borderColor: 'rgba(239, 68, 68, 0.8)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: true,
+            tension: 0.2
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              reverse: true, // 防御率は低い方が良いのでY軸を反転
+              ticks: {
+                callback: function(value) {
+                  return value.toFixed(2);
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '防御率: ' + context.parsed.y.toFixed(2);
+                }
+              }
+            }
+          }
+        }
+      });
+    } else {
+      ctxPitching.getContext('2d').fillText('グラフを表示するデータがありません', 10, 50);
+    }
+  }
+});
+</script>

@@ -1,0 +1,64 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-2">取込内容の確認・編集</h1>
+  <p class="text-gray-600 mb-6">OCRで読み取った内容です。ポジションを選択し、必要に応じて名前や背番号を修正してください。</p>
+
+  <%= form_with url: save_player_imports_path, method: :post do |form| %>
+    <div class="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-lg">
+      <label for="bulk_position_changer" class="font-semibold">ポジションを一括変更:</label>
+      <select id="bulk_position_changer" class="p-2 border rounded-lg bg-white">
+        <option value="">選択...</option>
+        <option value="投手">投手</option>
+        <option value="捕手">捕手</option>
+        <option value="内野手">内野手</option>
+        <option value="外野手">外野手</option>
+      </select>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 w-16 font-semibold">取込</th>
+            <th class="p-2 font-semibold">ポジション</th>
+            <th class="p-2 font-semibold">名前</th>
+            <th class="p-2 font-semibold">背番号</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <% @extracted_players.each_with_index do |player, i| %>
+            <tr class="hover:bg-gray-50">
+              <td class="p-2 text-center">
+                <%= check_box_tag "players[#{i}][import]", "1", true, class: "h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+              </td>
+              <td class="p-1">
+                <%= select_tag "players[#{i}][position]", options_for_select(["投手", "捕手", "内野手", "外野手"]), include_blank: '未選択', required: true, class: "player-position-select w-full p-2 border rounded-lg bg-white" %>
+              </td>
+              <td class="p-1">
+                <%= text_field_tag "players[#{i}][name]", player['name'], maxlength: 20, class: "w-full p-2 border rounded-lg" %>
+              </td>
+              <td class="p-1">
+                <%= number_field_tag "players[#{i}][jersey_number]", player['jersey_number'], max: 999, class: "w-20 p-2 border rounded-lg text-center" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 flex items-center gap-4">
+      <%= form.submit "チェックした選手を登録する", class: "bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition cursor-pointer" %>
+      <%= link_to "キャンセル", new_player_imports_path, class: "text-gray-600 hover:underline" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.getElementById('bulk_position_changer').addEventListener('change', function(event) {
+    const selectedPosition = event.target.value;
+    if (selectedPosition) {
+      document.querySelectorAll('.player-position-select').forEach(function(selectElement) {
+        selectElement.value = selectedPosition;
+      });
+    }
+  });
+</script>

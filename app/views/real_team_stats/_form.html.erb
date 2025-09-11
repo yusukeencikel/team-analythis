@@ -1,0 +1,80 @@
+<%= render 'shared/form_error_messages', object: real_team_stat %>
+
+<%= form_with(model: real_team_stat, class: "space-y-6") do |form| %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-lg bg-gray-50">
+    <div>
+      <%= form.label :year, "年度", class: "block font-semibold mb-1" %>
+      <%= form.number_field :year, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :team_name, "球団", class: "block font-semibold mb-1" %>
+      <%= form.text_field :team_name, class: "w-full p-2 border rounded-lg" %>
+    </div>
+  </div>
+
+  <div class="border rounded-lg p-4">
+    <h2 class="text-lg font-semibold mb-4">試合結果</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div><%= form.label :games, "試合数", class: "block text-sm" %><%= form.number_field :games, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :wins, "勝数", class: "block text-sm" %><%= form.number_field :wins, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :losses, "負数", class: "block text-sm" %><%= form.number_field :losses, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :ties, "引分", class: "block text-sm" %><%= form.number_field :ties, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :winning_percentage, "勝率", class: "block text-sm" %><%= form.text_field :winning_percentage, class: "w-full p-2 border rounded" %></div>
+    </div>
+  </div>
+
+  <div class="border rounded-lg p-4">
+    <h2 class="text-lg font-semibold mb-4">野手成績</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <%# 野手の項目をここに配置 %>
+      <div><%= form.label :batting_average, "打率", class: "block text-sm" %><%= form.text_field :batting_average, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :batter_games, "試合", class: "block text-sm" %><%= form.number_field :batter_games, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :plate_appearances, "打席", class: "block text-sm" %><%= form.number_field :plate_appearances, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :at_bats, "打数", class: "block text-sm" %><%= form.number_field :at_bats, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :hits, "安打", class: "block text-sm" %><%= form.number_field :hits, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :doubles, "二塁打", class: "block text-sm" %><%= form.number_field :doubles, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :triples, "三塁打", class: "block text-sm" %><%= form.number_field :triples, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :home_runs, "本塁打", class: "block text-sm" %><%= form.number_field :home_runs, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :total_bases, "塁打", class: "block text-sm" %><%= form.number_field :total_bases, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :rbi, "打点", class: "block text-sm" %><%= form.number_field :rbi, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :runs, "得点", class: "block text-sm" %><%= form.number_field :runs, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :batter_strikeouts, "三振", class: "block text-sm" %><%= form.number_field :batter_strikeouts, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :batter_walks, "四球", class: "block text-sm" %><%= form.number_field :batter_walks, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :sacrifice_bunts, "犠打", class: "block text-sm" %><%= form.number_field :sacrifice_bunts, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :sacrifice_flies, "犠飛", class: "block text-sm" %><%= form.number_field :sacrifice_flies, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :stolen_bases, "盗塁数", class: "block text-sm" %><%= form.number_field :stolen_bases, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :errors, "失策", class: "block text-sm" %><%= form.number_field :errors, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :slugging_percentage, "長打率", class: "block text-sm" %><%= form.text_field :slugging_percentage, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :ops, "OPS", class: "block text-sm" %><%= form.text_field :ops, class: "w-full p-2 border rounded" %></div>
+    </div>
+  </div>
+
+  <div class="border rounded-lg p-4">
+    <h2 class="text-lg font-semibold mb-4">投手成績</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <%# 投手の項目をここに配置 %>
+      <div><%= form.label :era, "防御率", class: "block text-sm" %><%= form.text_field :era, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :appearances, "登板", class: "block text-sm" %><%= form.number_field :appearances, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :complete_games, "完投", class: "block text-sm" %><%= form.number_field :complete_games, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :shutouts, "完封", class: "block text-sm" %><%= form.number_field :shutouts, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :pitcher_winning_percentage, "勝率", class: "block text-sm" %><%= form.text_field :pitcher_winning_percentage, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :pitcher_losses, "敗戦", class: "block text-sm" %><%= form.number_field :pitcher_losses, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :holds, "ホールド", class: "block text-sm" %><%= form.number_field :holds, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :hold_points, "HP", class: "block text-sm" %><%= form.number_field :hold_points, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :saves, "セーブ", class: "block text-sm" %><%= form.number_field :saves, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :innings_pitched, "投球回", class: "block text-sm" %><%= form.text_field :innings_pitched, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :hits_allowed, "被安打", class: "block text-sm" %><%= form.number_field :hits_allowed, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :walks, "与四球", class: "block text-sm" %><%= form.number_field :walks, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :strikeouts, "奪三振", class: "block text-sm" %><%= form.number_field :strikeouts, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :wild_pitches, "暴投", class: "block text-sm" %><%= form.number_field :wild_pitches, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :runs_allowed, "失点", class: "block text-sm" %><%= form.number_field :runs_allowed, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :earned_runs, "自責点", class: "block text-sm" %><%= form.number_field :earned_runs, class: "w-full p-2 border rounded" %></div>
+      <div><%= form.label :whip, "Whip", class: "block text-sm" %><%= form.text_field :whip, class: "w-full p-2 border rounded" %></div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4 pt-4 mt-4 border-t">
+    <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+    <%= link_to "一覧に戻る", real_team_stats_path(year: real_team_stat.year), class: "text-gray-600 hover:underline" %>
+  </div>
+<% end %>

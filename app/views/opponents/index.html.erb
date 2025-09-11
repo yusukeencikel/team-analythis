@@ -1,0 +1,32 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">対戦相手マスタ管理</h1>
+  <%= link_to '＋ 新規登録', new_opponent_path, class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition" %>
+</div>
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <table class="min-w-full">
+    <thead class="bg-gray-100 border-b">
+      <tr>
+        <th class="text-left py-3 px-4 font-semibold text-sm">対戦相手名</th>
+        <th class="text-left py-3 px-4 font-semibold text-sm">略称</th>
+        <th class="text-left py-3 px-4 font-semibold text-sm">本拠地</th>
+        <th class="text-left py-3 px-4 font-semibold text-sm">操作</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <% @opponents.each do |opponent| %>
+        <tr class="hover:bg-gray-50">
+          <td class="py-3 px-4"><%= opponent.name %></td>
+          <td class="py-3 px-4"><%= opponent.short_name %></td>
+          <%# opponent.stadium.name で関連先の球場名を表示 %>
+          <%# &. は、stadiumがnilの場合にエラーを防ぐための安全な記法 %>
+          <td class="py-3 px-4"><%= opponent.stadium&.name %></td>
+          <td class="py-3 px-4 space-x-2">
+            <%= link_to '編集', edit_opponent_path(opponent), class: "text-green-600 hover:underline" %>
+            <%= link_to '削除', opponent, data: { turbo_method: :delete, turbo_confirm: '本当に削除しますか？' }, class: "text-red-600 hover:underline" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

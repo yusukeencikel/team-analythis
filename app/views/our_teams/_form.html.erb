@@ -1,0 +1,37 @@
+<%= render 'shared/form_error_messages', object: our_team %>
+
+<%= form_with(model: our_team, class: "space-y-4") do |form| %>
+  <div>
+    <%= form.label :name, "チーム名", class: "block font-semibold mb-1" %>
+    <%= form.text_field :name, class: "w-full p-2 border rounded-lg" %>
+  </div>
+
+  <div>
+    <%= form.label :short_name, "略称", class: "block font-semibold mb-1" %>
+    <%= form.text_field :short_name, class: "w-full p-2 border rounded-lg" %>
+  </div>
+  
+  <div>
+    <%= form.label :league, "所属リーグ", class: "block font-semibold mb-1" %>
+    <%= form.select :league, ["パ・リーグ", "セ・リーグ"], { include_blank: '選択してください' }, class: "w-full p-2 border rounded-lg bg-white" %>
+  </div>
+
+  <div>
+    <%= form.label :stadium_id, "本拠地", class: "block font-semibold mb-1" %>
+    <%= form.collection_select :stadium_id, Stadium.all, :id, :name, { include_blank: '選択してください' }, class: "w-full p-2 border rounded-lg bg-white" %>
+  </div>
+
+  <div>
+    <%= form.label :icon, "チームアイコン (PNG形式)", class: "block font-semibold mb-1" %>
+    <% if our_team.icon.attached? %>
+      <div class="my-2">
+        <%= image_tag our_team.icon, class: "h-16 w-16 object-contain" %>
+      </div>
+    <% end %>
+    <%= form.file_field :icon, accept: "image/png", class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+  </div>
+<% end %>

@@ -1,0 +1,105 @@
+<style>
+  .favorite-star.favorited {
+    color: #FBBF24; /* Amber-400 for a gold star */
+  }
+</style>
+
+<div class="space-y-6">
+  <%# --- ページヘッダー --- %>
+  <div class="flex justify-between items-center flex-wrap gap-4">
+    <h1 class="text-2xl font-bold">試合一覧</h1>
+    <div class="flex gap-2">
+      <%= link_to 'ベストオーダー設定', best_orders_path, class: "bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition" %>
+      <%= link_to '＋ 新規試合を登録', new_game_path, class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition" %>
+    </div>
+  </div>
+
+  <%# --- 検索・絞り込みフォーム --- %>
+  <div class="bg-white rounded-lg shadow-md p-4">
+    <%= form_with(url: games_path, method: :get, class: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 items-end") do |form| %>
+      <div>
+        <%= form.label :year, "年度", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :year, options_for_select(@years_for_select, params[:year]), { include_blank: 'すべて' }, { class: "mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm" } %>
+      </div>
+      <div>
+        <%= form.label :month, "月", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :month, (1..12).map { |m| [ "#{m}月", m ] }, { include_blank: 'すべて', selected: params[:month] }, { class: "mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm" } %>
+      </div>
+      <div>
+        <%= form.label :opponent_id, "対戦相手", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.collection_select :opponent_id, @opponents_for_select, :id, :name, { include_blank: 'すべて', selected: params[:opponent_id] }, { class: "mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm" } %>
+      </div>
+      <div>
+        <%# ▼▼▼【ここを修正】表示名と送信する値を分ける ▼▼▼ %>
+        <%= form.label :result, "勝敗", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :result, options_for_select([['勝ち', 'win'], ['負け', 'lose'], ['引分', 'draw']], params[:result]), { include_blank: 'すべて' }, { class: "mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm" } %>
+      </div>
+       <div>
+        <%= form.label :home_away, "開催地", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :home_away, options_for_select([['ホーム', '先攻'], ['ビジター', '後攻']], params[:home_away]), { include_blank: 'すべて' }, { class: "mt-1 block w-full p-2 border-gray-300 rounded-md shadow-sm" } %>
+        <%# ▲▲▲【ここまで修正】▲▲▲ %>
+      </div>
+      <div class="flex items-center">
+        <div class="flex items-center h-5">
+          <%= check_box_tag :favorite, '1', params[:favorite] == '1', class: "h-5 w-5 text-blue-600 border-gray-300 rounded" %>
+        </div>
+        <div class="ml-2 text-sm">
+          <%= label_tag :favorite, "お気に入り", class: "font-medium text-gray-700" %>
+        </div>
+      </div>
+      <div>
+        <%= form.submit "検索", class: "w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# --- 試合一覧テーブル --- %>
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <table class="min-w-full">
+      <thead class="bg-gray-100 border-b">
+        <tr>
+          <th class="p-3 font-semibold text-sm text-center">★</th>
+          <th class="p-3 font-semibold text-sm text-left">試合日</th>
+          <th class="p-3 font-semibold text-sm text-left">対戦相手</th>
+          <th class="p-3 font-semibold text-sm text-center">スコア</th>
+          <th class="p-3 font-semibold text-sm text-center">結果</th>
+          <th class="p-3 font-semibold text-sm text-left">操作</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <% @games.each do |game| %>
+          <tr class="hover:bg-gray-50">
+            <td class="p-3 text-center">
+              <%= link_to toggle_favorite_game_path(game), data: { turbo_method: :patch }, class: "favorite-star #{'favorited' if game.is_favorite}", style: "text-decoration: none; font-size: 1.25rem;" do %>
+                <%= game.is_favorite ? '★' : '☆' %>
+              <% end %>
+            </td>
+            <td class="text-sm text-gray-600"><%= format_date_with_day(game.game_date) %></td>
+            <td class="p-3"><%= game.opponent.name %></td>
+            <td class="p-3 text-center font-mono"><%= game.our_score %> - <%= game.opponent_score %></td>
+            <td class="p-3 text-center">
+              <% if game.result == "win" %>
+                <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full text-xs">勝ち</span>
+              <% elsif game.result == "lose" %>
+                <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full text-xs">負け</span>
+              <% else %>
+                <span class="px-2 py-1 font-semibold leading-tight text-gray-700 bg-gray-100 rounded-full text-xs">引分</span>
+              <% end %>
+            </td>
+            <td class="p-3 space-x-2 whitespace-nowrap">
+              <%= link_to '詳細', game_path(game), class: "text-blue-600 hover:underline" %>
+              <%= link_to '編集', edit_game_path(game), class: "text-green-600 hover:underline" %>
+              <%= link_to '削除', game, data: { turbo_method: :delete, turbo_confirm: '本当に削除しますか？' }, class: "text-red-600 hover:underline" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <%# --- ページネーション --- %>
+  <div class="mt-4">
+    <%= paginate @games %>
+  </div>
+</div>
+

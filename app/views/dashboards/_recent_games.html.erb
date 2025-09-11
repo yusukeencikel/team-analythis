@@ -1,0 +1,86 @@
+<div class="col-span-1 md:col-span-3 space-y-6">
+  <h2 class="text-2xl font-bold text-gray-700">最近の試合結果</h2>
+  <% @recent_games.each do |game| %>
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <p class="font-semibold"><%= link_to format_date_with_day(game.game_date), game_path(game), class: "text-blue-600 hover:underline" %></p>
+        <p class="text-sm text-gray-600"><%= game.stadium&.name %></p>
+      </div>
+
+      <table class="w-full text-center text-sm mb-4">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="p-2">チーム</th>
+            <% (1..game.total_innings).each do |inning| %>
+              <th class="p-2"><%= inning %></th>
+            <% end %>
+            <th class="p-2 font-bold">R</th>
+            <th class="p-2 font-bold">H</th>
+            <th class="p-2 font-bold">E</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if game.home_away == '先攻' %>
+            <tr>
+              <td class="p-2 text-left font-bold"><%= OurTeam.first.name %></td>
+              <% game.our_display_scores.each do |score| %>
+                <td class="p-2"><%= score %></td>
+              <% end %>
+              <td class="p-2 font-bold"><%= game.our_score %></td>
+              <td class="p-2"><%= game.our_team_hits %></td>
+              <td class="p-2"><%= game.our_team_errors %></td>
+            </tr>
+            <tr>
+              <td class="p-2 text-left font-bold"><%= game.opponent.name %></td>
+              <% game.opponent_display_scores.each do |score| %>
+                <td class="p-2"><%= score %></td>
+              <% end %>
+              <td class="p-2 font-bold"><%= game.opponent_score %></td>
+              <td class="p-2"><%= game.opponent_team_hits %></td>
+              <td class="p-2"><%= game.opponent_team_errors %></td>
+            </tr>
+          <% else %>
+            <tr>
+              <td class="p-2 text-left font-bold"><%= game.opponent.name %></td>
+              <% game.opponent_display_scores.each do |score| %>
+                <td class="p-2"><%= score %></td>
+              <% end %>
+              <td class="p-2 font-bold"><%= game.opponent_score %></td>
+              <td class="p-2"><%= game.opponent_team_hits %></td>
+              <td class="p-2"><%= game.opponent_team_errors %></td>
+            </tr>
+            <tr>
+              <td class="p-2 text-left font-bold"><%= OurTeam.first.name %></td>
+              <% game.our_display_scores.each do |score| %>
+                <td class="p-2"><%= score %></td>
+              <% end %>
+              <td class="p-2 font-bold"><%= game.our_score %></td>
+              <td class="p-2"><%= game.our_team_hits %></td>
+              <td class="p-2"><%= game.our_team_errors %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <div class="text-xs space-y-1">
+        <p>
+          <% if game.winning_pitcher %>
+            <strong>[勝]</strong> <%= link_to game.winning_pitcher.name, player_path(game.winning_pitcher) %>
+          <% end %>
+          <% if game.losing_pitcher %>
+            <strong>[敗]</strong> <%= link_to game.losing_pitcher.name, player_path(game.losing_pitcher) %>
+          <% end %>
+          <% if game.saving_pitcher %>
+            <strong>[S]</strong> <%= link_to game.saving_pitcher.name, player_path(game.saving_pitcher) %>
+          <% end %>
+        </p>
+        <p>
+          <strong>[本]</strong>
+          <% game.home_run_hitters.each do |stat| %>
+            <%= link_to stat.player.name, player_path(stat.player) %> <%= stat.home_runs %>号,
+          <% end %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+</div>

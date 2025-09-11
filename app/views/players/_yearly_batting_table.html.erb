@@ -1,0 +1,54 @@
+<div class="overflow-x-auto bg-white rounded-lg shadow-md">
+  <h2 class="text-xl font-semibold p-4 bg-gray-50 border-b"><%= title %></h2>
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="p-2 text-left font-semibold"><%= category_name %></th>
+        <th class="p-2 text-center font-semibold">打率</th>
+        <th class="p-2 text-center font-semibold">試合</th>
+        <th class="p-2 text-center font-semibold">打席</th>
+        <th class="p-2 text-center font-semibold">打数</th>
+        <th class="p-2 text-center font-semibold">安打</th>
+        <th class="p-2 text-center font-semibold">二塁打</th>
+        <th class="p-2 text-center font-semibold">三塁打</th>
+        <th class="p-2 text-center font-semibold">本塁打</th>
+        <th class="p-2 text-center font-semibold">塁打</th>
+        <th class="p-2 text-center font-semibold">打点</th>
+        <th class="p-2 text-center font-semibold">盗塁</th>
+        <th class="p-2 text-center font-semibold">併殺打</th>
+        <th class="p-2 text-center font-semibold">出塁率</th>
+        <th class="p-2 text-center font-semibold">長打率</th>
+        <th class="p-2 text-center font-semibold">OPS</th>
+        <th class="p-2 text-center font-semibold">ISO</th>
+        <th class="p-2 text-center font-semibold">IsoD</th>
+        <th class="p-2 text-center font-semibold">失策</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y text-center">
+      <% stats_data.each do |category, stats| %>
+        <tr class="hover:bg-gray-50">
+          <td class="p-2 text-left"><%= category %></td>
+          <td class="p-2 font-semibold"><%= stats[:batting_average] %></td>
+          <td class="p-2"><%= stats[:games] %></td>
+          <td class="p-2"><%= stats[:plate_appearances] %></td>
+          <td class="p-2"><%= stats[:at_bats] %></td>
+          <td class="p-2"><%= stats[:hits] %></td>
+          <td class="p-2"><%= stats[:doubles] %></td>
+          <td class="p-2"><%= stats[:triples] %></td>
+          <td class="p-2"><%= stats[:home_runs] %></td>
+          <td class="p-2"><%= stats[:total_bases] %></td>
+          <td class="p-2"><%= stats[:rbi] %></td>
+          <td class="p-2"><%= stats[:stolen_bases] %></td>
+          <td class="p-2"><%= stats[:double_plays] %></td>
+          <td class="p-2"><%= stats[:on_base_percentage] %></td>
+          <td class="p-2"><%= stats[:slugging_percentage] %></td>
+          <td class="p-2"><%= stats[:ops] %></td>
+          <td class="p-2"><%= stats[:iso] %></td>
+          <td class="p-2"><%= stats[:isod] %></td>
+          <td class="p-2"><%= stats[:fielding_errors] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+

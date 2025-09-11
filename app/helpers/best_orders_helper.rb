@@ -1,0 +1,2 @@
+module BestOrdersHelper
+end

@@ -1,0 +1,22 @@
+<div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-6">選手一括登録 (OCR)</h1>
+  
+  <div class="mb-6 p-4 border-l-4 border-blue-500 bg-blue-50">
+    <h2 class="font-semibold">使い方:</h2>
+    <p class="text-sm text-gray-700">
+      選手名と背番号が記載された選手名簿のスクリーンショットをアップロードしてください。
+    </p>
+  </div>
+
+  <%= form_with url: player_imports_path, method: :post, multipart: true do |form| %>
+    <div>
+      <%= form.label :image, "選手リストの画像", class: "block font-semibold mb-2" %>
+      <%= form.file_field :image, accept: "image/*", required: true, class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" %>
+    </div>
+
+    <div class="mt-6 flex items-center gap-4">
+      <%= form.submit "取込を開始する", class: "bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition cursor-pointer" %>
+      <%= link_to "キャンセル", settings_path, class: "text-gray-600 hover:underline" %>
+    </div>
+  <% end %>
+</div>

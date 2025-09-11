@@ -1,0 +1,33 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  year: 1
+  team_name: MyString
+  batting_average: 1.5
+  hits: 1
+  home_runs: 1
+  rbi: 1
+  on_base_percentage: 1.5
+  stolen_bases: 1
+  ops: 1.5
+  era: 1.5
+  wins: 1
+  strikeouts: 1
+  holds: 1
+  saves: 1
+
+two:
+  year: 1
+  team_name: MyString
+  batting_average: 1.5
+  hits: 1
+  home_runs: 1
+  rbi: 1
+  on_base_percentage: 1.5
+  stolen_bases: 1
+  ops: 1.5
+  era: 1.5
+  wins: 1
+  strikeouts: 1
+  holds: 1
+  saves: 1

@@ -1,0 +1,391 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-2xl font-bold mb-4">チーム分析</h1>
+
+  <!-- Main Tabs -->
+  <div class="border-b border-gray-200">
+    <nav class="-mb-px flex space-x-8" id="main-tab-buttons">
+      <% main_tabs = { team: 'チーム', batting: '野手', pitching: '投手' } %>
+      <% main_tabs.each do |key, name| %>
+        <% is_active = @active_main_tab == key.to_s %>
+        <%= link_to name, 
+                    request.params.except(:sort, :direction, :page).merge(main_tab: key, sub_tab: 'stats-list'), 
+                    class: "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm #{is_active ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" %>
+      <% end %>
+    </nav>
+  </div>
+
+  <!-- Main Tab Content -->
+  <div class="mt-6">
+    <!-- チームタブ -->
+    <div id="team-content" class="main-tab-content <%= 'hidden' unless @active_main_tab == 'team' %>">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-center">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-2 font-semibold">年度</th>
+              <th class="p-2 font-semibold">試合数</th>
+              <th class="p-2 font-semibold">勝利数</th>
+              <th class="p-2 font-semibold">敗戦数</th>
+              <th class="p-2 font-semibold">引き分け数</th>
+              <th class="p-2 font-semibold">打率</th>
+              <th class="p-2 font-semibold">本塁打</th>
+              <th class="p-2 font-semibold">防御率</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <% @team_yearly_stats.each do |stats| %>
+              <tr class="hover:bg-gray-50">
+                <td class="p-2">
+                  <a href="<%= dashboard_path(year: stats[:year]) %>" class="text-blue-600 hover:underline"><%= stats[:year] %></a>
+                </td>
+                <td class="p-2"><%= stats[:total_games] %></td>
+                <td class="p-2"><%= stats[:wins] %></td>
+                <td class="p-2"><%= stats[:losses] %></td>
+                <td class="p-2"><%= stats[:draws] %></td>
+                <td class="p-2"><%= format('%.3f', stats[:team_avg]) %></td>
+                <td class="p-2"><%= stats[:team_home_runs] %></td>
+                <td class="p-2"><%= format('%.2f', stats[:team_era]) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 野手タブ -->
+    <div id="batting-content" class="main-tab-content <%= 'hidden' unless @active_main_tab == 'batting' %>">
+      <!-- Sub Tabs -->
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" id="sub-tab-buttons">
+          <% sub_tabs = { 'stats-list': '成績一覧', ranking: 'ランキング' } %>
+          <% sub_tabs.each do |key, name| %>
+            <% is_active = @active_sub_tab == key.to_s %>
+            <%= link_to name, 
+                        request.params.merge(sub_tab: key), 
+                        class: "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm #{is_active ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}",
+                        data: { turbo_frame: 'analytics_content' } %>
+          <% end %>
+        </nav>
+      </div>
+
+      <!-- Sub Tab Content -->
+      <%= turbo_frame_tag "analytics_content" do %>
+        <%= form_with(url: team_analytics_path, method: :get, local: true, class: "mb-4 p-4 bg-gray-50 rounded-lg") do |form| %>
+          <%= form.hidden_field :main_tab, value: @active_main_tab %>
+          <%= form.hidden_field :sub_tab, value: @active_sub_tab %>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <%= form.label :year, "年度", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.select :year, options_for_select(@search_years, @display_year), {}, class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" %>
+            </div>
+            <div>
+              <%= form.label :position, "ポジション", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.select :position, options_for_select(@search_positions, params[:position]), { include_blank: '全ポジション' }, class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" %>
+            </div>
+            <div class="flex items-center h-10">
+              <div class="flex items-center">
+                <%= form.check_box :qualified, { checked: params[:qualified] == 'true', class: "h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" }, 'true', 'false' %>
+                <%= form.label :qualified, "規定到達のみ", class: "ml-2 block text-sm text-gray-900" %>
+              </div>
+            </div>
+            <div>
+              <%= form.submit "検索", class: "w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+            </div>
+          </div>
+        <% end %>
+        <div class="mt-6">
+          <div id="stats-list" class="sub-tab-content <%= 'hidden' unless @active_sub_tab == 'stats-list' %>">
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm text-center whitespace-nowrap">
+                <thead class="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th class="p-2 text-left font-semibold"><%= sortable "name", "名前" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "batting_average", "打率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "games", "試合" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "plate_appearances", "打席" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "at_bats", "打数" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "hits", "安打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "doubles", "二塁打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "triples", "三塁打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "home_runs", "本塁打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "total_bases", "塁打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "rbi", "打点" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "runs", "得点" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "strikeouts", "三振" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "walks", "四球" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "sacrifice_bunts", "犠打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "sacrifice_flies", "犠飛" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "stolen_bases", "盗塁" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "double_plays", "併殺打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "on_base_percentage", "出塁率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "slugging_percentage", "長打率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "ops", "OPS" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "iso", "ISO" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "isod", "IsoD" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "fielding_errors", "失策" %></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y" id="stats-table-body">
+                  <% (@players || []).each do |player| %>
+                    <% stats = player.stats_for(@display_year) %>
+                    <tr class="hover:bg-gray-50">
+                      <td class="p-2 text-left font-semibold"><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %></td>
+                      <% avg = stats&.batting_average %>
+                      <td class="p-2 font-bold"><%= avg ? format('%.3f', avg).sub(/^0/, '') : '.---' %></td>
+                      <td class="p-2"><%= stats&.games || '-' %></td>
+                      <td class="p-2"><%= stats&.plate_appearances || '-' %></td>
+                      <td class="p-2"><%= stats&.at_bats || '-' %></td>
+                      <td class="p-2"><%= stats&.hits || '-' %></td>
+                      <td class="p-2"><%= stats&.doubles || '-' %></td>
+                      <td class="p-2"><%= stats&.triples || '-' %></td>
+                      <td class="p-2"><%= stats&.home_runs || '-' %></td>
+                      <td class="p-2"><%= stats&.total_bases || '-' %></td>
+                      <td class="p-2"><%= stats&.rbi || '-' %></td>
+                      <td class="p-2"><%= stats&.runs || '-' %></td>
+                      <td class="p-2"><%= stats&.strikeouts || '-' %></td>
+                      <td class="p-2"><%= stats&.walks || '-' %></td>
+                      <td class="p-2"><%= stats&.sacrifice_bunts || '-' %></td>
+                      <td class="p-2"><%= stats&.sacrifice_flies || '-' %></td>
+                      <td class="p-2"><%= stats&.stolen_bases || '-' %></td>
+                      <td class="p-2"><%= stats&.double_plays || '-' %></td>
+                      <% obp = stats&.on_base_percentage %>
+                      <td class="p-2"><%= obp ? format('%.3f', obp).sub(/^0/, '') : '.---' %></td>
+                      <% slg = stats&.slugging_percentage %>
+                      <td class="p-2"><%= slg ? format('%.3f', slg).sub(/^0/, '') : '.---' %></td>
+                      <% ops = stats&.ops %>
+                      <td class="p-2"><%= ops ? format('%.3f', ops).sub(/^0/, '') : '.---' %></td>
+                      <% iso = stats&.iso %>
+                      <td class="p-2"><%= iso ? format('%.3f', iso).sub(/^0/, '') : '.---' %></td>
+                      <% isod = stats&.isod %>
+                      <td class="p-2"><%= isod ? format('%.3f', isod).sub(/^0/, '') : '.---' %></td>
+                      <td class="p-2"><%= stats&.fielding_errors || '-' %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="ranking" class="sub-tab-content <%= 'hidden' unless @active_sub_tab == 'ranking' %>">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 打率</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@batting_average_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.batting_average ? format('%.3f', stats.batting_average).sub(/^0/, '') : '.---' %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 出塁率</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@on_base_percentage_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.on_base_percentage ? format('%.3f', stats.on_base_percentage).sub(/^0/, '') : '.---' %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 長打率</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@slugging_percentage_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.slugging_percentage ? format('%.3f', stats.slugging_percentage).sub(/^0/, '') : '.---' %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ OPS</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@ops_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.ops ? format('%.3f', stats.ops).sub(/^0/, '') : '.---' %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 安打</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@hits_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.hits || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 本塁打</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@home_run_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.home_runs || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 打点</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@rbi_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.rbi || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 盗塁</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@stolen_bases_ranking || []).first(5).each do |player, stats| %>
+                    <li><%= link_to player.name, player_path(player), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.stolen_bases || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- 投手タブ -->
+    <div id="pitching-content" class="main-tab-content <%= 'hidden' unless @active_main_tab == 'pitching' %>">
+      <!-- Sub Tabs -->
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" id="sub-tab-buttons">
+          <% sub_tabs = { 'stats-list': '成績一覧', ranking: 'ランキング' } %>
+          <% sub_tabs.each do |key, name| %>
+            <% is_active = @active_sub_tab == key.to_s %>
+            <%= link_to name, 
+                        request.params.merge(main_tab: 'pitching', sub_tab: key), 
+                        class: "whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm #{is_active ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}",
+                        data: { turbo_frame: 'analytics_pitching_content' } %>
+          <% end %>
+        </nav>
+      </div>
+
+      <%= turbo_frame_tag "analytics_pitching_content" do %>
+        <!-- 検索フォーム -->
+        <%= form_with(url: team_analytics_path, method: :get, local: true, class: "mb-4 p-4 bg-gray-50 rounded-lg") do |form| %>
+          <%= form.hidden_field :main_tab, value: @active_main_tab %>
+          <%= form.hidden_field :sub_tab, value: @active_sub_tab %>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div>
+              <%= form.label :year, "年度", class: "block text-sm font-medium text-gray-700" %>
+              <%= form.select :year, options_for_select(@search_years, @display_year), {}, class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" %>
+            </div>
+            <div class="flex items-center h-10">
+              <div class="flex items-center">
+                <%= form.check_box :qualified, { checked: params[:qualified] == 'true', class: "h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" }, 'true', 'false' %>
+                <%= form.label :qualified, "規定投球回のみ", class: "ml-2 block text-sm text-gray-900" %>
+              </div>
+            </div>
+            <div></div>
+            <div>
+              <%= form.submit "検索", class: "w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+            </div>
+          </div>
+        <% end %>
+        <div class="mt-6">
+          <div id="stats-list" class="sub-tab-content <%= 'hidden' unless @active_sub_tab == 'stats-list' %>">
+            <!-- 成績一覧テーブル -->
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm text-center whitespace-nowrap">
+                <thead class="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th class="p-2 text-left font-semibold"><%= sortable "name", "名前" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "era", "防御率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "appearances", "登板" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "starts", "先発" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "complete_games", "完投" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "shutouts", "完封" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "no_walk_complete_games", "無四球完投" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "wins", "勝利" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "losses", "敗戦" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "saves", "セーブ" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "holds", "ホールド" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "qs", "QS" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "qs_rate", "QS率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "hqs", "HQS" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "hqs_rate", "HQS率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "innings_pitched", "投球回" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "hits_allowed", "被安打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "home_runs_allowed", "被本塁打" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "strikeouts_pitched", "奪三振" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "k_per_nine", "奪三振率" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "walks_allowed", "与四球" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "wild_pitches", "暴投" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "earned_runs", "自責点" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "k_bb", "K/BB" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "whip", "WHIP" %></th>
+                    <th class="p-2 font-semibold"><%= sortable "fip", "FIP" %></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y">
+                  <% (@pitchers || []).each do |pitcher| %>
+                    <% stats = pitcher.pitching_stats_for(@display_year) %>
+                    <tr class="hover:bg-gray-50">
+                      <td class="p-2 text-left font-semibold"><%= link_to pitcher.name, player_path(pitcher), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %></td>
+                      <td class="p-2 font-bold"><%= stats&.era ? format('%.2f', stats.era) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.appearances || '-' %></td>
+                      <td class="p-2"><%= stats&.starts || '-' %></td>
+                      <td class="p-2"><%= stats&.complete_games || '-' %></td>
+                      <td class="p-2"><%= stats&.shutouts || '-' %></td>
+                      <td class="p-2"><%= stats&.no_walk_complete_games || '-' %></td>
+                      <td class="p-2"><%= stats&.wins || '-' %></td>
+                      <td class="p-2"><%= stats&.losses || '-' %></td>
+                      <td class="p-2"><%= stats&.saves || '-' %></td>
+                      <td class="p-2"><%= stats&.holds || '-' %></td>
+                      <td class="p-2"><%= stats&.qs || '-' %></td>
+                      <td class="p-2"><%= stats&.qs_rate ? format('%.2f', stats.qs_rate) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.hqs || '-' %></td>
+                      <td class="p-2"><%= stats&.hqs_rate ? format('%.2f', stats.hqs_rate) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.innings_pitched ? format('%.1f', stats.innings_pitched) : '-' %></td>
+                      <td class="p-2"><%= stats&.hits_allowed || '-' %></td>
+                      <td class="p-2"><%= stats&.home_runs_allowed || '-' %></td>
+                      <td class="p-2"><%= stats&.strikeouts_pitched || '-' %></td>
+                      <td class="p-2"><%= stats&.k_per_nine ? format('%.2f', stats.k_per_nine) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.walks_allowed || '-' %></td>
+                      <td class="p-2"><%= stats&.wild_pitches || '-' %></td>
+                      <td class="p-2"><%= stats&.earned_runs || '-' %></td>
+                      <td class="p-2"><%= stats&.k_bb ? format('%.2f', stats.k_bb) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.whip ? format('%.2f', stats.whip) : '-.--' %></td>
+                      <td class="p-2"><%= stats&.fip ? format('%.2f', stats.fip) : '-.--' %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="ranking" class="sub-tab-content <%= 'hidden' unless @active_sub_tab == 'ranking' %>">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 防御率</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@era_ranking || []).first(5).each do |pitcher, stats| %>
+                    <li><%= link_to pitcher.name, player_path(pitcher), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.era ? format('%.2f', stats.era) : '-.--' %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 勝利</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@wins_ranking || []).first(5).each do |pitcher, stats| %>
+                    <li><%= link_to pitcher.name, player_path(pitcher), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.wins || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ 奪三振</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@strikeouts_ranking || []).first(5).each do |pitcher, stats| %>
+                    <li><%= link_to pitcher.name, player_path(pitcher), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.strikeouts_pitched || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold mb-2">▼ セーブ</h3>
+                <ol class="list-decimal list-inside space-y-1">
+                  <% (@saves_ranking || []).first(5).each do |pitcher, stats| %>
+                    <li><%= link_to pitcher.name, player_path(pitcher), class: "text-blue-600 hover:underline", data: { turbo_frame: '_top' } %> <span class="font-bold float-right"><%= stats.saves || 0 %></span></li>
+                  <% end %>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

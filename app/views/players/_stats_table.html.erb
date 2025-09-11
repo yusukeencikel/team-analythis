@@ -1,0 +1,57 @@
+<div class="overflow-x-auto bg-white rounded-lg shadow-md">
+  <h3 class="font-semibold text-md p-3 bg-gray-50 border-b"><%= title %></h3>
+  <table class="min-w-full text-xs">
+    <thead class="bg-gray-100">
+      <% if type == :batting %>
+        <tr>
+          <th class="p-2 text-left font-semibold">分類</th>
+          <th class="p-2 text-center font-semibold">打率</th>
+          <th class="p-2 text-center font-semibold">試合</th>
+          <th class="p-2 text-center font-semibold">打数</th>
+          <th class="p-2 text-center font-semibold">安打</th>
+          <th class="p-2 text-center font-semibold">本塁打</th>
+          <th class="p-2 text-center font-semibold">打点</th>
+          <th class="p-2 text-center font-semibold">OPS</th>
+        </tr>
+      <% else %>
+         <tr>
+          <th class="p-2 text-left font-semibold">分類</th>
+          <th class="p-2 text-center font-semibold">防御率</th>
+          <th class="p-2 text-center font-semibold">登板</th>
+          <th class="p-2 text-center font-semibold">勝利</th>
+          <th class="p-2 text-center font-semibold">敗戦</th>
+          <th class="p-2 text-center font-semibold">投球回</th>
+          <th class="p-2 text-center font-semibold">奪三振</th>
+          <th class="p-2 text-center font-semibold">WHIP</th>
+        </tr>
+      <% end %>
+    </thead>
+    <tbody class="divide-y text-center">
+      <% stats_data.each do |key, stats| %>
+        <tr class="hover:bg-gray-50">
+          <td class="p-2 text-left">
+            <%# キーが数値なら月、文字列ならそのまま、オブジェクトならname属性を表示 %>
+            <%= key.is_a?(Integer) ? "#{key}月" : (key.respond_to?(:name) ? key.name : key) %>
+          </td>
+          <% if type == :batting %>
+            <td class="p-2"><%= format('%.3f', stats[:batting_average]).sub(/^0/, '') %></td>
+            <td class="p-2"><%= stats[:games] %></td>
+            <td class="p-2"><%= stats[:at_bats] %></td>
+            <td class="p-2"><%= stats[:hits] %></td>
+            <td class="p-2"><%= stats[:home_runs] %></td>
+            <td class="p-2"><%= stats[:rbi] %></td>
+            <td class="p-2"><%= format('%.3f', stats[:ops]).sub(/^0/, '') %></td>
+          <% else %>
+            <td class="p-2"><%= format('%.2f', stats[:era]) %></td>
+            <td class="p-2"><%= stats[:appearances] %></td>
+            <td class="p-2"><%= stats[:wins] %></td>
+            <td class="p-2"><%= stats[:losses] %></td>
+            <td class="p-2"><%= format('%.1f', stats[:innings_pitched]) %></td>
+            <td class="p-2"><%= stats[:strikeouts] %></td>
+            <td class="p-2"><%= format('%.2f', stats[:whip]) %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

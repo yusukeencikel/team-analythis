@@ -1,0 +1,91 @@
+<div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
+  <h1 class="text-3xl font-bold mb-4"><%= @player.name %>のダミー成績追加</h1>
+
+  <%= form_with(url: save_dummy_stats_player_path(@player), method: :post, local: true, class: "space-y-6") do |form| %>
+    
+    <div>
+      <%= label_tag :year, "年度", class: "block text-sm font-medium text-gray-700" %>
+      <%= select_tag :year, options_for_select(@available_years), { include_blank: "年度を選択してください", class: "mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" } %>
+    </div>
+
+    <%# ポジションに応じてフォームを出し分け %>
+    <% if @player.position == '投手' %>
+      <div class="space-y-4">
+        <h2 class="text-2xl font-bold mt-6 border-b pb-2">投手成績</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <%= label_tag 'pitching_stats[innings_pitched]', '投球回', class: "block text-sm font-medium text-gray-700" %>
+            <%= text_field_tag 'pitching_stats[innings_pitched]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md", placeholder: "例: 6.1" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[earned_runs]', '自責点', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[earned_runs]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[wins]', '勝利', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[wins]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[losses]', '敗戦', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[losses]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[saves]', 'セーブ', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[saves]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[holds]', 'ホールド', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[holds]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[appearances]', '登板', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[appearances]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'pitching_stats[starts]', '先発', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'pitching_stats[starts]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+        </div>
+      </div>
+    <% else %>
+      <div class="space-y-4">
+        <h2 class="text-2xl font-bold mt-6 border-b pb-2">野手成績</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <%= label_tag 'batting_stats[at_bats]', '打数', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[at_bats]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[hits]', '安打', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[hits]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[home_runs]', '本塁打', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[home_runs]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[rbi]', '打点', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[rbi]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[stolen_bases]', '盗塁', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[stolen_bases]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[walks]', '四球', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[walks]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+          <div>
+            <%= label_tag 'batting_stats[strikeouts]', '三振', class: "block text-sm font-medium text-gray-700" %>
+            <%= number_field_tag 'batting_stats[strikeouts]', '', class: "mt-1 block w-full p-2 border border-gray-300 rounded-md" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex items-center gap-4 mt-6">
+      <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+      <%= link_to "キャンセル", player_path(@player), class: "text-gray-600 hover:underline" %>
+    </div>
+  <% end %>
+</div>

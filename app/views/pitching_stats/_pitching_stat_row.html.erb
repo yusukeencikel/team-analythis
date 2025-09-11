@@ -1,0 +1,62 @@
+<%# このファイルは、投手成績入力テーブルの「一行」を定義する部品です %>
+<%# stat: 表示する成績データ (PitchingStatオブジェクト) %>
+<%# index: フォームのname属性で使うためのインデックス番号 %>
+<%# players: 選手選択プルダウン用の投手リスト %>
+<tr class="pitching-stat-row odd:bg-gray-50">
+  <%# --- 選手選択 --- %>
+  <td class="p-2">
+    <%= select_tag "pitching_stats[#{index}][player_id]",
+                   options_from_collection_for_select(players, :id, :name, stat.player_id),
+                   { include_blank: '選手を選択', class: "w-32 p-2 border rounded-lg bg-white" } %>
+  </td>
+  <%# --- 登板順 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][pitching_order]", stat.pitching_order, min: 1, class: "w-16 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 結果 --- %>
+  <td class="p-2">
+    <%= select_tag "pitching_stats[#{index}][pitcher_result]",
+                   options_for_select(["勝利", "敗戦", "ホールド", "セーブ"], stat.pitcher_result),
+                   { include_blank: '-', class: "w-24 p-2 border rounded-lg bg-white" } %>
+  </td>
+  <%# --- 投球回 --- %>
+  <td class="p-2">
+    <%= text_field_tag "pitching_stats[#{index}][innings_pitched]", stat.send(:innings_pitched), class: "w-20 p-2 text-center border rounded", placeholder: "例: 6.1" %>
+  </td>
+  <%# --- 対戦打者 (追加) --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][batters_faced]", stat.batters_faced, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 投球数 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][pitches_thrown]", stat.pitches_thrown, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 被安打 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][hits_allowed]", stat.hits_allowed, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 被本塁打 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][home_runs_allowed]", stat.home_runs_allowed, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 奪三振 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][strikeouts]", stat.strikeouts, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 与四球 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][walks]", stat.walks, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 暴投 (追加) --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][wild_pitches]", stat.wild_pitches, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 失点 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][runs_allowed]", stat.runs_allowed, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+  <%# --- 自責点 --- %>
+  <td class="p-2">
+    <%= number_field_tag "pitching_stats[#{index}][earned_runs]", stat.earned_runs, min: 0, class: "w-20 p-2 text-center border rounded" %>
+  </td>
+</tr>

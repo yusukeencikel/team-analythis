@@ -1,0 +1,58 @@
+<%= render 'shared/form_error_messages', object: player %>
+
+<%= form_with(model: player, class: "space-y-4", data: { controller: "player-form" }) do |form| %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <%= form.label :name, "名前", class: "block font-semibold mb-1" %>
+      <%= form.text_field :name, required: true, class: "w-full p-2 border rounded-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :jersey_number, "背番号", class: "block font-semibold mb-1" %>
+      <%= form.text_field :jersey_number, class: "w-full p-2 border rounded-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :position, "ポジション", class: "block font-semibold mb-1" %>
+      <%= form.select :position, ["投手", "捕手", "内野手", "外野手"], { include_blank: "選択してください" }, class: "w-full p-2 border rounded-lg bg-white" %>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <%= form.label :throwing_hand, "投", class: "block font-semibold mb-1" %>
+        <%= form.select :throwing_hand, ["右", "左"], { include_blank: "選択" }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+      </div>
+      <div>
+        <%= form.label :batting_hand, "打", class: "block font-semibold mb-1" %>
+        <%= form.select :batting_hand, ["右", "左", "両"], { include_blank: "選択" }, { class: "w-full p-2 border rounded-lg bg-white" } %>
+      </div>
+    </div>
+
+    <div>
+      <%= form.label :birthday, "生年月日", class: "block font-semibold mb-1" %>
+      <%= form.text_field :birthday, value: (form.object.birthday.strftime('%Y%m%d') if form.object.birthday), placeholder: "例: 19990101", class: "w-full p-2 border rounded-lg" %>
+    </div>
+
+    <div>
+      <%= form.label :status, "ステータス", class: "block font-semibold mb-1" %>
+      <%= form.select :status, options_for_select([['現役', 'active'], ['退団', 'inactive']], player.status), {}, { class: "w-full p-2 border rounded-lg bg-white", data: { action: "change->player-form#toggleDepartureFields" } } %>
+    </div>
+  </div>
+
+  <div data-player-form-target="departureFields" class="<%= 'hidden' if player.status != 'inactive' %> space-y-4 mt-4">
+    <div>
+      <%= form.label :departure_reason, "退団理由", class: "block font-semibold mb-1" %>
+      <%= form.select :departure_reason, Player::DEPARTURE_REASONS, { include_blank: "選択してください" }, class: "w-full p-2 border rounded-lg bg-white" %>
+    </div>
+  </div>
+
+  <div>
+    <%= form.label :join_background, "入団経緯", class: "block font-semibold mb-1" %>
+    <%= form.text_area :join_background, rows: 4, class: "w-full p-2 border rounded-lg" %>
+  </div>
+
+  <div class="flex items-center gap-4 pt-4">
+    <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+    <%= link_to "キャンセル", players_path, class: "text-gray-600 hover:underline" %>
+  </div>
+<% end %>

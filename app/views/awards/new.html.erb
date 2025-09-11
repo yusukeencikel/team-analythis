@@ -1,0 +1,13 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">新規年度追加</h1>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <%= form_with model: Award.new, url: awards_path do |form| %>
+      <div class="mb-4">
+        <%= form.label :year, "年度", class: "block font-semibold mb-2" %>
+        <%= form.number_field :year, value: @year, class: "w-full p-2 border rounded-lg" %>
+      </div>
+      <%= form.submit "作成", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition" %>
+    <% end %>
+  </div>
+</div>

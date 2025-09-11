@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>TeamAnalytics</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+<%# 【追加】共通OCRアップロード用JavaScript %>
+  <script>
+    document.addEventListener('turbo:load', () => {
+      const ocrDropZones = document.querySelectorAll('.js-ocr-drop-zone');
+
+      ocrDropZones.forEach(dropZone => {
+        const ocrButton = dropZone.querySelector('.js-ocr-button');
+        const ocrFileInput = dropZone.querySelector('.js-ocr-file-input');
+        const ocrUrl = dropZone.dataset.ocrUrl;
+        const redirectUrl = dropZone.dataset.redirectUrl; // リダイレクト先URL
+        const originalButtonText = ocrButton.textContent;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        if (!ocrButton || !ocrFileInput || !ocrUrl || dropZone.dataset.listenerAttached) {
+          return;
+        }
+
+        const handleFiles = async (files) => {
+          if (!files || files.length === 0) return;
+
+          ocrButton.textContent = '解析中...';
+          ocrButton.disabled = true;
+          dropZone.classList.add('cursor-wait', 'bg-blue-100');
+
+          const formData = new FormData();
+          // 複数ファイルに対応
+          for (const file of files) {
+            formData.append('images[]', file);
+          }
+          
+          // 非表示のフォームを作成して送信
+          const form = document.createElement('form');
+          form.method = 'post';
+          form.action = ocrUrl;
+          form.enctype = 'multipart/form-data';
+          form.style.display = 'none';
+
+          const tokenInput = document.createElement('input');
+          tokenInput.type = 'hidden';
+          tokenInput.name = 'authenticity_token';
+          tokenInput.value = csrfToken;
+          form.appendChild(tokenInput);
+
+          for (const file of files) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.name = 'images[]';
+            // DataTransferオブジェクトを使ってファイルを設定
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            form.appendChild(fileInput);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        };
+
+        // --- Event Listeners ---
+        ocrButton.addEventListener('click', () => ocrFileInput.click());
+        ocrFileInput.addEventListener('change', (event) => handleFiles(event.target.files));
+
+        dropZone.addEventListener('dragover', (event) => {
+          event.preventDefault();
+          dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        dropZone.addEventListener('dragleave', () => {
+          dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        dropZone.addEventListener('drop', (event) => {
+          event.preventDefault();
+          dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+          handleFiles(event.dataTransfer.files);
+        });
+
+        dropZone.dataset.listenerAttached = 'true';
+      });
+
+      // ペースト機能はページ全体でリッスンする
+      document.addEventListener('paste', (event) => {
+        const dropZone = document.querySelector('.js-ocr-drop-zone'); // ページに一つだけある前提
+        if (dropZone) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            const files = [];
+            for (const item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    files.push(item.getAsFile());
+                }
+            }
+            if(files.length > 0){
+                const handleFiles = dropZone.handleFiles; // 関数を取得
+                if(handleFiles) handleFiles(files);
+            }
+        }
+      });
+    });
+  </script>
+</head>
+
+  <body class="bg-gray-100 text-gray-800 font-sans dark:bg-gray-900 dark:text-gray-200">
+  <header class="bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-white shadow-md sticky top-0 z-10">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <%= link_to 'Team Analytics', root_path, class: "text-xl font-bold" %>
+      <nav class="hidden md:flex space-x-4">
+        <div class="relative" data-controller="dropdown">
+          <button data-action="click->dropdown#toggle" class="hover:text-blue-300">選手名鑑</button>
+          <div data-dropdown-target="menu" class="hidden absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-20">
+            <%= link_to '現役選手名鑑', players_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" %>
+            <%= link_to '引退・退団選手名鑑', retired_players_path, class: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600" %>
+          </div>
+        </div>
+        <%= link_to '試合一覧', games_path, class: "hover:text-blue-300" %>
+        <%= link_to 'チーム分析', team_analytics_path, class: "hover:text-blue-300" %>
+        <%= link_to '設定', settings_path, class: "hover:text-blue-300" %>
+      </nav>
+      <button id="dark-mode-toggle" class="hover:text-blue-300">
+        <!-- Moon icon -->
+        <svg id="moon-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <!-- Sun icon -->
+        <svg id="sun-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+    <main class="container mx-auto p-4 md:p-6">
+      <%# 通知メッセージの表示エリア %>
+      <% if flash[:notice] %>
+        <div class="bg-green-100 border border-green-400 text-green-700 dark:bg-green-900 dark:border-green-700 dark:text-green-300 px-4 py-3 rounded relative mb-4" role="alert">
+          <span class="block sm:inline"><%= notice %></span>
+        </div>
+      <% end %>
+      
+      <%# ここに各ページの内容が表示される %>
+      <%= yield %>
+    </main>
+    <script>
+      const toggle = document.getElementById('dark-mode-toggle');
+      const moonIcon = document.getElementById('moon-icon');
+      const sunIcon = document.getElementById('sun-icon');
+      const html = document.querySelector('html');
+
+      toggle.addEventListener('click', () => {
+        html.classList.toggle('dark');
+        moonIcon.classList.toggle('hidden');
+        sunIcon.classList.toggle('hidden');
+        
+        if (html.classList.contains('dark')) {
+          localStorage.setItem('darkMode', 'true');
+        } else {
+          localStorage.removeItem('darkMode');
+        }
+      });
+
+      if (localStorage.getItem('darkMode')) {
+        html.classList.add('dark');
+        moonIcon.classList.add('hidden');
+        sunIcon.classList.remove('hidden');
+      }
+    </script>
+  </body>
+</html>

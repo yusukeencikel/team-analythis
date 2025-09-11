@@ -1,0 +1,152 @@
+<%#
+  ローカル変数:
+  - stats_collection: 表示する成績データのハッシュ or 配列
+  - category_title: (任意) カテゴリ列の見出し (例: "対戦チーム")
+  - show_total: (任意) 合計行を表示するかどうか (デフォルトはfalse)
+%>
+
+<% show_category = local_assigns.fetch(:show_category, true) %>
+<% show_total = local_assigns.fetch(:show_total, false) %>
+<% category_title = local_assigns.fetch(:category_title, "カテゴリ") %>
+
+<table class="min-w-full text-sm">
+  <thead class="bg-gray-100">
+    <tr>
+      <% if show_category %>
+        <th class="p-2 text-left font-semibold"><%= category_title %></th>
+      <% end %>
+      <th class="p-2 text-center font-semibold">打率</th>
+      <th class="p-2 text-center font-semibold">試合</th>
+      <th class="p-2 text-center font-semibold">打席</th>
+      <th class="p-2 text-center font-semibold">打数</th>
+      <th class="p-2 text-center font-semibold">安打</th>
+      <th class="p-2 text-center font-semibold">二塁打</th>
+      <th class="p-2 text-center font-semibold">三塁打</th>
+      <th class="p-2 text-center font-semibold">本塁打</th>
+      <th class="p-2 text-center font-semibold">塁打</th>
+      <th class="p-2 text-center font-semibold">打点</th>
+      <th class="p-2 text-center font-semibold">得点</th>
+      <th class="p-2 text-center font-semibold">三振</th>
+      <th class="p-2 text-center font-semibold">四球</th>
+      <th class="p-2 text-center font-semibold">犠打</th>
+      <th class="p-2 text-center font-semibold">犠飛</th>
+      <th class="p-2 text-center font-semibold">盗塁</th>
+      <th class="p-2 text-center font-semibold">併殺打</th>
+      <th class="p-2 text-center font-semibold">出塁率</th>
+      <th class="p-2 text-center font-semibold">長打率</th>
+      <th class="p-2 text-center font-semibold">OPS</th>
+      <th class="p-2 text-center font-semibold">ISO</th>
+      <th class="p-2 text-center font-semibold">IsoD</th>
+      <th class="p-2 text-center font-semibold">失策</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y">
+    <% data_source = stats_collection.is_a?(Hash) ? stats_collection.sort.to_h : stats_collection %>
+    
+    <% total_stats = Hash.new(0) %>
+    <% data_source.each do |category_or_stats, stats_or_nil| %>
+      <%
+        stats = nil
+        category = nil
+        awards_for_year = []
+        if stats_or_nil # データソースがハッシュの場合
+          category = category_or_stats
+          stats = stats_or_nil
+          if defined?(awards_by_year) && awards_by_year
+            awards_for_year = awards_by_year[category.to_i] || []
+          end
+        else # データソースが配列の場合
+          stats = category_or_stats
+          if category_title == "年度" && stats.respond_to?(:year)
+            category = stats.year
+            if defined?(awards_by_year) && awards_by_year
+              awards_for_year = awards_by_year[category.to_i] || []
+            end
+          end
+        end
+        
+        if show_total
+          stats_hash = stats.is_a?(Hash) ? stats : stats.attributes
+          stats_hash.each do |key, value|
+            total_stats[key] += value if value.is_a?(Numeric)
+          end
+        end
+      %>
+      <tr class="hover:bg-gray-50 text-center">
+        <% if show_category %>
+          <td class="p-2 text-left font-semibold">
+            <% if category_title == "年度" %>
+              <%= link_to category, player_path(@player, year: category, stats: 'batting'), class: "text-blue-600 hover:underline" %>
+            <% elsif category_title == "月" %>
+              <%= "#{category.to_i}月" %>
+            <% else %>
+              <%= category %>
+            <% end %>
+          </td>
+        <% end %>
+        <td class="font-semibold <%= 'font-bold text-red-600' if has_award?(awards_for_year, '首位打者') %>"><%= format('%.3f', stats[:batting_average].to_f).sub(/^0/, '') %></td>
+        <td><%= stats[:games] %></td>
+        <td><%= stats[:plate_appearances] %></td>
+        <td><%= stats[:at_bats] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最多安打') %>"><%= stats[:hits] %></td>
+        <td><%= stats[:doubles] %></td>
+        <td><%= stats[:triples] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '本塁打王') %>"><%= stats[:home_runs] %></td>
+        <td><%= stats[:total_bases] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '打点王') %>"><%= stats[:rbi] %></td>
+        <td><%= stats[:runs] %></td>
+        <td><%= stats[:strikeouts] %></td>
+        <td><%= stats[:walks] %></td>
+        <td><%= stats[:sacrifice_bunts] %></td>
+        <td><%= stats[:sacrifice_flies] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '盗塁王') %>"><%= stats[:stolen_bases] %></td>
+        <td><%= stats[:double_plays] %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最高出塁率') %>"><%= format('%.3f', stats[:on_base_percentage].to_f).sub(/^0/, '') %></td>
+        <td><%= format('%.3f', stats[:slugging_percentage].to_f).sub(/^0/, '') %></td>
+        <td class="<%= 'font-bold text-red-600' if has_award?(awards_for_year, '最高OPS') %>"><%= format('%.3f', stats[:ops].to_f).sub(/^0/, '') %></td>
+        <td><%= format('%.3f', stats[:iso].to_f).sub(/^0/, '') %></td>
+        <td><%= format('%.3f', stats[:isod].to_f).sub(/^0/, '') %></td>
+        <td><%= stats[:fielding_errors] %></td>
+      </tr>
+    <% end %>
+
+    <% if data_source.empty? %>
+      <tr><td colspan="24" class="p-4 text-center text-gray-500">表示できるデータがありません</td></tr>
+    <% elsif show_total %>
+      <%# 合計行の表示 %>
+      <tr class="font-bold bg-gray-200">
+        <% if show_category %>
+          <td class="p-2 text-center">合計</td>
+        <% end %>
+        <% total_batting_average = total_stats[:at_bats] > 0 ? total_stats[:hits].to_f / total_stats[:at_bats] : 0 %>
+        <% total_on_base_denominator = total_stats[:at_bats] + total_stats[:walks] + total_stats[:sacrifice_flies] %>
+        <% total_on_base_percentage = total_on_base_denominator > 0 ? (total_stats[:hits] + total_stats[:walks]).to_f / total_on_base_denominator : 0 %>
+        <% total_slugging_percentage = total_stats[:at_bats] > 0 ? total_stats[:total_bases].to_f / total_stats[:at_bats] : 0 %>
+        
+        <td class="font-bold text-center"><%= format('%.3f', total_batting_average).sub(/^0/, '') %></td>
+        <td class="text-center"><%= total_stats[:games] %></td>
+        <td class="text-center"><%= total_stats[:plate_appearances] %></td>
+        <td class="text-center"><%= total_stats[:at_bats] %></td>
+        <td class="text-center"><%= total_stats[:hits] %></td>
+        <td class="text-center"><%= total_stats[:doubles] %></td>
+        <td class="text-center"><%= total_stats[:triples] %></td>
+        <td class="text-center"><%= total_stats[:home_runs] %></td>
+        <td class="text-center"><%= total_stats[:total_bases] %></td>
+        <td class="text-center"><%= total_stats[:rbi] %></td>
+        <td class="text-center"><%= total_stats[:runs] %></td>
+        <td class="text-center"><%= total_stats[:strikeouts] %></td>
+        <td class="text-center"><%= total_stats[:walks] %></td>
+        <td class="text-center"><%= total_stats[:sacrifice_bunts] %></td>
+        <td class="text-center"><%= total_stats[:sacrifice_flies] %></td>
+        <td class="text-center"><%= total_stats[:stolen_bases] %></td>
+        <td class="text-center"><%= total_stats[:double_plays] %></td>
+        <td class="text-center"><%= format('%.3f', total_on_base_percentage).sub(/^0/, '') %></td>
+        <td class="text-center"><%= format('%.3f', total_slugging_percentage).sub(/^0/, '') %></td>
+        <td class="text-center"><%= format('%.3f', total_on_base_percentage + total_slugging_percentage).sub(/^0/, '') %></td>
+        <td class="text-center"><%= format('%.3f', total_slugging_percentage - total_batting_average).sub(/^0/, '') %></td>
+        <td class="text-center"><%= format('%.3f', total_on_base_percentage - total_batting_average).sub(/^0/, '') %></td>
+        <td class="text-center"><%= total_stats[:fielding_errors] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

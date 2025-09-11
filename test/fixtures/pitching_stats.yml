@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  player: one
+  game: one
+  result: MyString
+  innings_pitched: 1.5
+  hits_allowed: 1
+  strikeouts: 1
+  walks_and_hbp: 1
+  earned_runs: 1
+
+two:
+  player: two
+  game: two
+  result: MyString
+  innings_pitched: 1.5
+  hits_allowed: 1
+  strikeouts: 1
+  walks_and_hbp: 1
+  earned_runs: 1

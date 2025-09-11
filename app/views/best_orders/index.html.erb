@@ -1,0 +1,27 @@
+<div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">ベストオーダー設定</h1>
+      <% if @best_orders.count < 10 %>
+        <%= link_to '＋ 新規オーダーを登録', new_best_order_path, class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition" %>
+      <% else %>
+        <p class="text-sm text-gray-500">登録上限(10件)に達しています。</p>
+      <% end %>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <% @best_orders.each do |order| %>
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="flex justify-between items-start">
+            <h2 class="text-lg font-semibold text-gray-800"><%= order.name %></h2>
+            <div class="flex gap-2">
+              <%= link_to '編集', edit_best_order_path(order), class: "text-sm text-green-600 hover:underline" %>
+              <%= link_to '削除', order, data: { turbo_method: :delete, turbo_confirm: '本当に削除しますか？' }, class: "text-sm text-red-600 hover:underline" %>
+            </div>
+          </div>
+          <ol class="text-sm mt-2 space-y-1 list-decimal list-inside">
+            <% order.best_order_players.order(:batting_order).each do |op| %>
+              <li><%= op.player.name %> (<%= op.fielding_position %>)</li>
+            <% end %>
+          </ol>
+        </div>
+      <% end %>
+    </div>

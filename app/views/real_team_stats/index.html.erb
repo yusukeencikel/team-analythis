@@ -1,0 +1,47 @@
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold">歴代現実チーム成績マスタ</h1>
+  <%= link_to '＋ 新規登録', new_real_team_stat_path, class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition" %>
+</div>
+
+<!-- 年度選択フォーム -->
+<%= form_with(url: real_team_stats_path, method: :get, class: "flex items-center gap-2 mb-4") do %>
+  <%= select_tag :year, options_from_collection_for_select(@years, :year, :year, @selected_year), include_blank: '年度を選択', onchange: 'this.form.submit()', class: "p-2 border rounded-lg bg-white" %>
+<% end %>
+
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-100 border-b">
+        <tr>
+          <th class="p-2 font-semibold">チーム名</th>
+          <th class="p-2 font-semibold">打率</th>
+          <th class="p-2 font-semibold">本塁打</th>
+          <th class="p-2 font-semibold">打点</th>
+          <th class="p-2 font-semibold">OPS</th>
+          <th class="p-2 font-semibold">防御率</th>
+          <th class="p-2 font-semibold">勝利</th>
+          <th class="p-2 font-semibold">セーブ</th>
+          <th class="p-2 font-semibold">操作</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        <% @real_team_stats.each do |stat| %>
+          <tr class="hover:bg-gray-50 text-center">
+            <td class="p-2 text-left font-semibold"><%= stat.team_name %></td>
+            <td class="p-2"><%= stat.batting_average %></td>
+            <td class="p-2"><%= stat.home_runs %></td>
+            <td class="p-2"><%= stat.rbi %></td>
+            <td class="p-2"><%= stat.ops %></td>
+            <td class="p-2"><%= stat.era %></td>
+            <td class="p-2"><%= stat.wins %></td>
+            <td class="p-2"><%= stat.saves %></td>
+            <td class="p-2 space-x-2">
+              <%= link_to '編集', edit_real_team_stat_path(stat), class: "text-green-600 hover:underline" %>
+              <%= link_to '削除', stat, data: { turbo_method: :delete, turbo_confirm: '本当に削除しますか？' }, class: "text-red-600 hover:underline" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

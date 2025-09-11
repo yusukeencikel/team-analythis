@@ -1,0 +1,2 @@
+class RealPlayerStat < ApplicationRecord
+end

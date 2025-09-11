@@ -1,0 +1,65 @@
+<%= render 'shared/form_error_messages', object: pitching_stat %>
+
+<%= form_with(model: [@game, pitching_stat], class: "space-y-4") do |form| %>
+  <div>
+    <%= form.label :player_id, "投手名", class: "block font-semibold mb-1" %>
+    <%= form.collection_select :player_id, @players, :id, :name, { include_blank: '選択してください' }, class: "w-full p-2 border rounded-lg bg-white" %>
+  </div>
+
+  <div>
+    <%= form.label :pitcher_result, "結果", class: "block font-semibold mb-1" %>
+    <%= form.select :pitcher_result, ["勝利", "敗戦", "セーブ", "ホールド", "なし"], { include_blank: '選択してください' }, class: "w-full p-2 border rounded-lg bg-white" %>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4">
+    <div>
+      <%= form.label :innings_pitched, "投球回", class: "block font-semibold mb-1" %>
+      <%= form.text_field :innings_pitched, class: "w-full p-2 border rounded-lg", placeholder: "例: 6.1" %>
+    </div>
+    <div>
+      <%= form.label :batters_faced, "打者", class: "block font-semibold mb-1" %>
+      <%= form.number_field :batters_faced, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :pitches_thrown, "投球数", class: "block font-semibold mb-1" %>
+      <%= form.number_field :pitches_thrown, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :hits_allowed, "被安打", class: "block font-semibold mb-1" %>
+      <%= form.number_field :hits_allowed, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :strikeouts, "奪三振", class: "block font-semibold mb-1" %>
+      <%= form.number_field :strikeouts, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :walks, "与四球", class: "block font-semibold mb-1" %>
+      <%= form.number_field :walks, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :runs_allowed, "失点", class: "block font-semibold mb-1" %>
+      <%= form.number_field :runs_allowed, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :earned_runs, "自責点", class: "block font-semibold mb-1" %>
+      <%= form.number_field :earned_runs, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :wild_pitches, "暴投", class: "block font-semibold mb-1" %>
+      <%= form.number_field :wild_pitches, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :home_runs_allowed, "被本塁打", class: "block font-semibold mb-1" %>
+      <%= form.number_field :home_runs_allowed, class: "w-full p-2 border rounded-lg" %>
+    </div>
+    <div>
+      <%= form.label :hit_by_pitches, "与死球", class: "block font-semibold mb-1" %>
+      <%= form.number_field :hit_by_pitches, class: "w-full p-2 border rounded-lg" %>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+    <%= link_to "キャンセル", game_pitching_stats_path(@game), class: "text-gray-600 hover:underline" %>
+  </div>
+<% end %>

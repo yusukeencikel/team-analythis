@@ -1,0 +1,323 @@
+<div class="p-6">
+  <h1 class="text-3xl font-bold text-gray-800">
+    <%= @current_season %>年シーズン ダッシュボード
+  </h1>
+
+  <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div class="col-span-1 md:col-span-3 bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold text-gray-700">チーム成績</h2>
+      <div class="mt-4 flex flex-wrap gap-x-8 gap-y-4 text-center">
+        <div class="flex-1 min-w-[100px]">
+          <p class="text-xs font-semibold text-gray-500">勝敗</p>
+          <p class="mt-1 text-2xl font-bold text-gray-800"><%= @team_summary[:wins] %>勝 <%= @team_summary[:losses] %>敗 <%= @team_summary[:draws] %>分</p>
+        </div>
+        <div class="flex-1 min-w-[100px]">
+          <p class="text-xs font-semibold text-gray-500">勝率</p>
+          <p class="mt-1 text-2xl font-bold text-gray-800"><%= format('%.3f', @team_summary[:winning_percentage]).sub(/^0/, '') %></p>
+        </div>
+        <div class="flex-1 min-w-[100px]">
+          <p class="text-xs font-semibold text-gray-500">打率</p>
+          <p class="mt-1 text-2xl font-bold text-gray-800"><%= format('%.3f', @team_summary[:batting_average]).sub(/^0/, '') %></p>
+        </div>
+        <div class="flex-1 min-w-[100px]">
+          <p class="text-xs font-semibold text-gray-500">防御率</p>
+          <p class="mt-1 text-2xl font-bold text-gray-800"><%= format('%.2f', @team_summary[:era]) %></p>
+        </div>
+      </div>
+    </div>
+
+    <%= render 'recent_games' %>
+
+    <div class="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold text-gray-700">好調選手ピックアップ</h2>
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="font-semibold text-lg text-gray-600">野手 (直近6試合)</h3>
+          <% @hot_batters.each do |player_data| %>
+            <div class="mt-2 text-sm">
+              <p class="font-bold"><%= link_to player_data.name, player_path(player_data.player_id) %></p>
+              <p>OPS: <%= format('%.3f', ((player_data.total_hits + player_data.total_walks).to_f / (player_data.total_at_bats + player_data.total_walks + player_data.total_sacrifice_flies)) + (player_data.total_bases.to_f / player_data.total_at_bats)).sub(/^0/, '') %></p>
+              <p>打率: <%= format('%.3f', player_data.total_hits.to_f / player_data.total_at_bats).sub(/^0/, '') %></p>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="font-semibold text-lg text-gray-600">先発 (直近3登板)</h3>
+          <% @hot_starters&.each do |player_data| %>
+            <div class="mt-2 text-sm">
+              <p class="font-bold">
+                <% if player_data[:player_id].present? %>
+                  <%= link_to player_data[:player_name], player_path(player_data[:player_id]) %>
+                <% else %>
+                  <%= player_data[:player_name] %>
+                <% end %>
+              </p>
+              <p>防御率: <%= format('%.2f', player_data[:era]) %></p>
+              <p>奪三振: <%= player_data[:strike_outs] %></p>
+            </div>
+          <% end %>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h3 class="font-semibold text-lg text-gray-600">中継ぎ (直近10登板)</h3>
+          <% @hot_relievers&.each do |player_data| %>
+            <div class="mt-2 text-sm">
+              <p class="font-bold">
+                <% if player_data[:player_id].present? %>
+                  <%= link_to player_data[:player_name], player_path(player_data[:player_id]) %>
+                <% else %>
+                  <%= player_data[:player_name] %>
+                <% end %>
+              </p>
+              <p>防御率: <%= format('%.2f', player_data[:era]) %></p>
+              <p>セーブ: <%= player_data[:saves] %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="md:col-span-1 bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold text-gray-700">個人成績ランキング</h2>
+      <div class="mt-4 space-y-4">
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">打率</h3>
+          <% @batting_leaders[:batting_average].each do |player_data| %>
+            <div>
+              <%= link_to player_data.name, player_path(player_data.player_id) %>
+              (<%= format('%.3f', player_data.total_hits.to_f / player_data.total_at_bats).sub(/^0/, '') %>)
+            </div>
+          <% end %>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">OPS</h3>
+          <% @batting_leaders[:ops].each do |player_data| %>
+            <div>
+              <%= link_to player_data.name, player_path(player_data.player_id) %>
+              (<%= format('%.3f', ((player_data.total_hits + player_data.total_walks).to_f / (player_data.total_at_bats + player_data.total_walks + player_data.total_sacrifice_flies)) + (player_data.total_bases.to_f / player_data.total_at_bats)).sub(/^0/, '') %>)
+            </div>
+          <% end %>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">本塁打</h3>
+          <% @batting_leaders[:home_runs].each do |player_data| %>
+            <div><%= link_to player_data.name, player_path(player_data.player_id) %> (<%= player_data.total_home_runs %>)</div>
+          <% end %>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">打点</h3>
+          <% @batting_leaders[:rbi].each do |player_data| %>
+            <div><%= link_to player_data.name, player_path(player_data.player_id) %> (<%= player_data.total_rbi %>)</div>
+          <% end %>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">勝利</h3>
+          <% @pitching_leaders[:wins].each do |player_data| %>
+            <div><%= link_to player_data.name, player_path(player_data.player_id) %> (<%= player_data.total_wins %>)</div>
+          <% end %>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">セーブ</h3>
+          <% @pitching_leaders[:saves].each do |player_data| %>
+            <div><%= link_to player_data.name, player_path(player_data.player_id) %> (<%= player_data.total_saves %>)</div>
+          <% end %>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">防御率</h3>
+          <% @pitching_leaders[:era].each do |player_data| %>
+            <div>
+              <%= link_to player_data.name, player_path(player_data.player_id) %>
+              (<%= format('%.2f', (player_data.total_earned_runs.to_f * 27) / player_data.total_outs_pitched).sub(/^0/, '') %>)
+            </div>
+          <% end %>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-lg text-gray-600">奪三振</h3>
+          <% @pitching_leaders[:strike_outs].each do |player_data| %>
+            <div><%= link_to player_data.name, player_path(player_data.player_id) %> (<%= player_data.total_strikeouts %>)</div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-span-1 md:col-span-3 bg-white rounded-lg shadow-md p-6">
+      <details class="mb-4">
+        <summary class="p-4 cursor-pointer font-semibold text-lg hover:bg-gray-50">年度別順位</summary>
+        <div class="p-4 border-t">
+          <% if @yearly_team_summaries.present? %>
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年度</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">試合</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">敗</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">分</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">勝率</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% @yearly_team_summaries.each do |summary| %>
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= summary[:year] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= summary[:wins] + summary[:losses] + summary[:draws] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= summary[:wins] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= summary[:losses] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= summary[:draws] %></td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= format('%.3f', summary[:winning_percentage]).sub(/^0/, '') %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          <% else %>
+            <div>データがありません</div>
+          <% end %>
+        </div>
+      </details>
+
+      <details class="mb-4">
+        <summary class="p-4 cursor-pointer font-semibold text-lg hover:bg-gray-50">年度別チーム打撃成績</summary>
+        <div class="p-4 border-t">
+          <% if @yearly_batting_stats.present? %>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">年度</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">打率</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">打席</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">打数</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">安打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">二塁打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">三塁打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">本塁打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">塁打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">打点</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">得点</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">三振</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">四球</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">犠打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">犠飛</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">盗塁</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">併殺打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">出塁率</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">長打率</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">OPS</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">ISO</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">ISOd</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">失策</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <% @yearly_batting_stats.each do |stats| %>
+                    <tr>
+                      <td class="px-3 py-4 whitespace-nowrap font-medium text-gray-900"><%= stats[:year] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:batting_average]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:plate_appearances] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:at_bats] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:hits] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:doubles] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:triples] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:home_runs] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:total_bases] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:rbis] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:runs] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:strikeouts] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:walks] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:sacrifice_bunts] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:sacrifice_flies] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:stolen_bases] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:double_plays] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:on_base_percentage]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:slugging_percentage]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:ops]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:iso]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.3f', stats[:isod]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:errors] %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div>データがありません</div>
+          <% end %>
+        </div>
+      </details>
+
+      <details>
+        <summary class="p-4 cursor-pointer font-semibold text-lg hover:bg-gray-50">年度別チーム投手成績</summary>
+        <div class="p-4 border-t">
+          <% if @yearly_pitching_stats.present? %>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">年度</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">防御率</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">登板</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">勝</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">敗</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">セーブ</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">ホールド</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">QS</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">HQS</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">投球回</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">被安打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">被本塁打</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">奪三振</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">奪三振率</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">与四球</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">暴投</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">自責点</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">K/BB</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">WHIP</th>
+                    <th class="px-3 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">FIP</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <% @yearly_pitching_stats.each do |stats| %>
+                    <tr>
+                      <td class="px-3 py-4 whitespace-nowrap font-medium text-gray-900"><%= stats[:year] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.2f', stats[:era]).sub(/^0/, '') %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:games_pitched] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:wins] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:losses] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:saves] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:holds] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:quality_starts] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:high_quality_starts] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.1f', stats[:innings_pitched]) %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:hits_allowed] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:home_runs_allowed] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:strikeouts] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.2f', stats[:strikeout_rate]) %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:walks] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:wild_pitches] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= stats[:earned_runs] %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.2f', stats[:k_bb]) %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.2f', stats[:whip]) %></td>
+                      <td class="px-3 py-4 whitespace-nowrap text-gray-500"><%= format('%.2f', stats[:fip]) %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <div>データがありません</div>
+          <% end %>
+        </div>
+      </details>
+    </div>
+
+  </div>
+</div>

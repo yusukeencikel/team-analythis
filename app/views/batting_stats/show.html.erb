@@ -1,0 +1,210 @@
+<div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl" id="batting-stats-form-container">
+  <%# --- 1. ページヘッダー --- %>
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800">野手成績入力</h1>
+      <p class="text-gray-500 mt-1">
+        対象試合: <%= @game.game_date.strftime('%Y年%m月%d日') %> vs <%= @game.opponent.name %>
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <select id="best_order_select" class="p-2 border rounded-lg bg-white">
+        <option value="">ベストオーダーを選択...</option>
+        <% @best_orders.each do |order| %>
+          <option value="<%= fetch_best_order_path(order) %>"><%= order.name %></option>
+        <% end %>
+      </select>
+      <button type="button" id="call_best_order_btn" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition">呼び出し</button>
+      <%= link_to '試合詳細に戻る', game_path(@game), class: "text-gray-600 hover:text-gray-800" %>
+    </div>
+  </div>
+
+  <%# --- OCR取込 --- %>
+  <div class="my-6">
+    <div id="batting-ocr-drop-zone" 
+         class="js-ocr-drop-zone max-w-xl mx-auto p-6 border-2 border-dashed rounded-lg text-center cursor-pointer hover:bg-gray-50 transition"
+         data-ocr-url="<%= game_batting_stats_ocr_path(@game) %>"
+         data-redirect-url="<%= game_batting_stats_path(@game) %>">
+      <p class="text-gray-500">ここに画像をドラッグ＆ドロップ、またはペーストしてOCR取込</p>
+      <p class="text-sm text-gray-400 my-2">または</p>
+      <button type="button" class="js-ocr-button bg-purple-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-purple-600 transition">
+        ファイルを選択
+      </button>
+      <input type="file" class="js-ocr-file-input hidden" accept="image/*" multiple>
+    </div>
+  </div>
+
+  <%# --- 2. 成績入力フォーム --- %>
+  <%= form_with(url: game_batting_stats_path(@game), method: :post, id: 'batting-stats-form', data: { turbo: false }) do |form| %>
+    <div class="bg-white shadow-md rounded-lg overflow-x-auto border border-gray-200">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left font-semibold sticky left-0 bg-gray-100 z-10" style="min-width: 200px;">名前</th>
+            <th class="p-2 font-semibold">打順</th>
+            <th class="p-2 font-semibold">守備</th>
+            <th class="p-2 font-semibold">出場</th>
+            <th class="p-2 font-semibold">打数</th>
+            <th class="p-2 font-semibold">安打</th>
+            <th class="p-2 font-semibold">二塁打</th>
+            <th class="p-2 font-semibold">三塁打</th>
+            <th class="p-2 font-semibold">本塁打</th>
+            <th class="p-2 font-semibold">打点</th>
+            <th class="p-2 font-semibold">得点</th>
+            <th class="p-2 font-semibold">三振</th>
+            <th class="p-2 font-semibold">四球</th>
+            <th class="p-2 font-semibold">犠打</th>
+            <th class="p-2 font-semibold">犠飛</th>
+            <th class="p-2 font-semibold">盗塁</th>
+            <th class="p-2 font-semibold">併殺</th>
+            <th class="p-2 font-semibold">失策</th>
+            <th class="p-2 font-semibold"></th>
+          </tr>
+        </thead>
+        <tbody id="stats-table-body" class="divide-y">
+          <% @batting_stats.each_with_index do |stat, index| %>
+            <%= render 'stat_row', stat: stat, index: index, players: @players %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# --- 3. アクションボタン --- %>
+    <div class="mt-6 flex items-center justify-between">
+      <button type="button" id="add-row-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
+        ＋ 行を追加
+      </button>
+      <div class="flex items-center gap-4">
+        <%= link_to 'キャンセル', game_path(@game), class: 'text-gray-600 hover:text-gray-800' %>
+        <%= form.submit 'この内容で登録する', class: 'bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer' %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# --- 新しい行の雛形 --- %>
+  <template id="row-template">
+    <%= render 'stat_row', stat: BattingStat.new, index: '__INDEX__', players: @players %>
+  </template>
+
+  <%# --- JavaScript --- %>
+  <script>
+  document.addEventListener('turbo:load', () => {
+    const container = document.getElementById('batting-stats-form-container');
+    if (!container) return;
+
+    const tableBody = document.getElementById('stats-table-body');
+    const rowTemplate = document.getElementById('row-template');
+    
+    const addRow = (index, data = {}) => {
+      const newRowHtml = rowTemplate.innerHTML.replace(/__INDEX__/g, index);
+      tableBody.insertAdjacentHTML('beforeend', newRowHtml);
+      const newRow = tableBody.rows[tableBody.rows.length - 1];
+
+      for (const [key, value] of Object.entries(data)) {
+        const element = newRow.querySelector(`[name*="[${key}]"]`);
+        if (element) {
+          element.value = value || (element.type === 'number' ? 0 : '');
+        }
+      }
+    };
+
+    const sortTable = () => {
+      const rows = Array.from(tableBody.querySelectorAll('tr'));
+      const participationOrder = ["先発", "代打", "代走", "守備", "中継", ""];
+
+      rows.sort((a, b) => {
+        const orderA = parseInt(a.querySelector('[name*="[batting_order]"]').value) || 99;
+        const orderB = parseInt(b.querySelector('[name*="[batting_order]"]').value) || 99;
+        if (orderA !== orderB) return orderA - orderB;
+        
+        const participationA = participationOrder.indexOf(a.querySelector('[name*="[participation_type]"]').value);
+        const participationB = participationOrder.indexOf(b.querySelector('[name*="[participation_type]"]').value);
+        return participationA - participationB;
+      });
+
+      rows.forEach(row => tableBody.appendChild(row));
+    };
+    
+    // --- イベントリスナーのセットアップ (イベント委譲) ---
+    container.addEventListener('click', async (event) => {
+      if (event.target.id === 'add-row-btn') {
+        const rowIndex = new Date().getTime(); // ユニークなIDを生成
+        addRow(rowIndex);
+      }
+
+      if (event.target.classList.contains('remove-row-btn')) {
+        event.target.closest('tr').remove();
+      }
+
+      if (event.target.id === 'call_best_order_btn') {
+        const bestOrderSelect = document.getElementById('best_order_select');
+        const selectedUrl = bestOrderSelect.value;
+        if (!selectedUrl) return alert('呼び出すベストオーダーを選択してください。');
+        
+        try {
+          const response = await fetch(selectedUrl, { headers: { 'Accept': 'application/json' } });
+          if (!response.ok) throw new Error('オーダーの取得に失敗しました。');
+          const bestOrderData = await response.json();
+          
+          tableBody.innerHTML = '';
+          
+          bestOrderData.forEach((playerData, index) => {
+            addRow(index, { ...playerData, participation_type: '先発' });
+          });
+          sortTable();
+        } catch (error) {
+          console.error('Error fetching best order:', error);
+          alert(error.message);
+        }
+      }
+    });
+
+    const populateOcrData = () => {
+        const ocrData = <%= @ocr_data ? @ocr_data.to_json.html_safe : 'null' %>;
+        if (!ocrData || ocrData.length === 0) return;
+
+        const playersMasterList = <%= @players.to_json(only: [:id, :name]).html_safe %>;
+        
+        const existingRowsByPlayerId = new Map();
+        tableBody.querySelectorAll('tr').forEach(row => {
+          const select = row.querySelector('select[name*="[player_id]"]');
+          if(select && select.value) {
+            existingRowsByPlayerId.set(select.value, row);
+          }
+        });
+
+        ocrData.forEach(ocrStat => {
+          const matchedPlayer = playersMasterList.find(p => p.name.includes(ocrStat.player_name) || ocrStat.player_name.includes(p.name));
+          if (!matchedPlayer) return;
+
+          const playerIdStr = matchedPlayer.id.toString();
+          const existingRow = existingRowsByPlayerId.get(playerIdStr);
+
+          const fieldsToUpdate = {
+            at_bats: ocrStat.at_bats, hits: ocrStat.hits, doubles: ocrStat.doubles,
+            triples: ocrStat.triples, home_runs: ocrStat.home_runs, rbi: ocrStat.rbi,
+            runs: ocrStat.runs, strikeouts: ocrStat.strikeouts, walks: ocrStat.walks,
+            sacrifice_bunts: ocrStat.sacrifice_bunts, stolen_bases: ocrStat.stolen_bases,
+            double_plays: ocrStat.double_plays, fielding_errors: ocrStat.fielding_errors
+          };
+
+          if (existingRow) {
+            for (const [key, value] of Object.entries(fieldsToUpdate)) {
+              const element = existingRow.querySelector(`[name*="[${key}]"]`);
+              if (element) element.value = value || 0;
+            }
+          } else {
+            const newIndex = new Date().getTime() + Math.random();
+            const newData = { player_id: playerIdStr, participation_type: '', ...fieldsToUpdate };
+            addRow(newIndex, newData);
+          }
+        });
+        
+        sortTable();
+    };
+
+    populateOcrData();
+    sortTable();
+  });
+</script>
+</div>

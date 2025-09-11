@@ -1,0 +1,24 @@
+<%= render 'shared/form_error_messages', object: opponent %>
+
+<%= form_with(model: opponent, class: "space-y-4") do |form| %>
+  <div>
+    <%= form.label :name, "対戦相手名", class: "block font-semibold mb-1" %>
+    <%= form.text_field :name, class: "w-full p-2 border rounded-lg" %>
+  </div>
+
+  <div>
+    <%= form.label :short_name, "略称", class: "block font-semibold mb-1" %>
+    <%= form.text_field :short_name, class: "w-full p-2 border rounded-lg" %>
+  </div>
+
+  <div>
+    <%= form.label :stadium_id, "本拠地", class: "block font-semibold mb-1" %>
+    <%# テキスト入力から、球場マスタを選択するドロップダウンに変更 %>
+    <%= form.collection_select :stadium_id, @stadiums, :id, :name, { include_blank: '未設定' }, class: "w-full p-2 border rounded-lg bg-white" %>
+  </div>
+
+  <div class="flex items-center gap-4">
+    <%= form.submit "保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+    <%= link_to "キャンセル", opponents_path, class: "text-gray-600 hover:underline" %>
+  </div>
+<% end %>

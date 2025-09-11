@@ -1,0 +1,376 @@
+{
+  "language": "ja",
+  "textAngle": 0.0,
+  "orientation": "Up",
+  "regions": [
+    {
+      "boundingBox": "64,28,1786,1024",
+      "lines": [
+        {
+          "boundingBox": "1448,28,402,30",
+          "words": [
+            {
+              "boundingBox": "1448,28,30,30",
+              "text": "0"
+            },
+            {
+              "boundingBox": "1494,34,18,18",
+              "text": "並"
+            },
+            {
+              "boundingBox": "1514,33,18,19",
+              "text": "び"
+            },
+            {
+              "boundingBox": "1534,34,18,18",
+              "text": "替"
+            },
+            {
+              "boundingBox": "1554,34,17,18",
+              "text": "え"
+            },
+            {
+              "boundingBox": "1592,31,2,24",
+              "text": "ー"
+            },
+            {
+              "boundingBox": "1628,28,30,30",
+              "text": "・"
+            },
+            {
+              "boundingBox": "1674,34,18,18",
+              "text": "決"
+            },
+            {
+              "boundingBox": "1694,34,19,18",
+              "text": "定"
+            },
+            {
+              "boundingBox": "1732,31,2,24",
+              "text": "ー"
+            },
+            {
+              "boundingBox": "1768,28,30,30",
+              "text": "・"
+            },
+            {
+              "boundingBox": "1814,34,18,18",
+              "text": "戻"
+            },
+            {
+              "boundingBox": "1835,35,15,16",
+              "text": "る"
+            }
+          ]
+        },
+        {
+          "boundingBox": "105,43,155,18",
+          "words": [
+            {
+              "boundingBox": "105,43,13,16",
+              "text": "D"
+            },
+            {
+              "boundingBox": "162,43,18,18",
+              "text": "背"
+            },
+            {
+              "boundingBox": "182,43,18,18",
+              "text": "番"
+            },
+            {
+              "boundingBox": "202,43,18,18",
+              "text": "号"
+            },
+            {
+              "boundingBox": "222,43,19,18",
+              "text": "設"
+            },
+            {
+              "boundingBox": "242,43,18,18",
+              "text": "定"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1093,269,29,364",
+          "words": [
+            {
+              "boundingBox": "1098,269,21,23",
+              "text": "ロ"
+            },
+            {
+              "boundingBox": "1096,336,26,25",
+              "text": "谷"
+            },
+            {
+              "boundingBox": "1096,404,26,24",
+              "text": "坂"
+            },
+            {
+              "boundingBox": "1093,483,21,3",
+              "text": "一"
+            },
+            {
+              "boundingBox": "1098,541,22,23",
+              "text": "田"
+            },
+            {
+              "boundingBox": "1096,607,26,26",
+              "text": "楽"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1040,268,30,364",
+          "words": [
+            {
+              "boundingBox": "1040,268,25,24",
+              "text": "蓑"
+            },
+            {
+              "boundingBox": "1040,335,26,26",
+              "text": "古"
+            },
+            {
+              "boundingBox": "1040,403,26,26",
+              "text": "赤"
+            },
+            {
+              "boundingBox": "1045,471,25,25",
+              "text": "ホ"
+            },
+            {
+              "boundingBox": "1040,540,26,24",
+              "text": "武"
+            },
+            {
+              "boundingBox": "1040,608,26,24",
+              "text": "設"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1124,676,25,24",
+          "words": [
+            {
+              "boundingBox": "1124,676,25,24",
+              "text": "原"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1012,675,25,26",
+          "words": [
+            {
+              "boundingBox": "1012,675,25,26",
+              "text": "井"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1412,291,166,26",
+          "words": [
+            {
+              "boundingBox": "1412,292,26,25",
+              "text": "現"
+            },
+            {
+              "boundingBox": "1440,291,26,26",
+              "text": "在"
+            },
+            {
+              "boundingBox": "1468,294,24,21",
+              "text": "の"
+            },
+            {
+              "boundingBox": "1496,291,26,26",
+              "text": "背"
+            },
+            {
+              "boundingBox": "1524,291,26,26",
+              "text": "番"
+            },
+            {
+              "boundingBox": "1552,292,26,25",
+              "text": "号"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1412,612,166,26",
+          "words": [
+            {
+              "boundingBox": "1412,612,26,26",
+              "text": "新"
+            },
+            {
+              "boundingBox": "1445,613,19,24",
+              "text": "し"
+            },
+            {
+              "boundingBox": "1468,615,24,21",
+              "text": "い"
+            },
+            {
+              "boundingBox": "1496,612,26,26",
+              "text": "背"
+            },
+            {
+              "boundingBox": "1524,612,26,26",
+              "text": "番"
+            },
+            {
+              "boundingBox": "1552,613,26,25",
+              "text": "号"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1097,744,23,160",
+          "words": [
+            {
+              "boundingBox": "1097,744,23,24",
+              "text": "山"
+            },
+            {
+              "boundingBox": "1098,813,22,23",
+              "text": "田"
+            },
+            {
+              "boundingBox": "1098,881,22,23",
+              "text": "田"
+            }
+          ]
+        },
+        {
+          "boundingBox": "1040,743,26,161",
+          "words": [
+            {
+              "boundingBox": "1040,743,26,25",
+              "text": "丸"
+            },
+            {
+              "boundingBox": "1040,811,25,26",
+              "text": "永"
+            },
+            {
+              "boundingBox": "1041,880,24,24",
+              "text": "上"
+            }
+          ]
+        },
+        {
+          "boundingBox": "64,1028,613,24",
+          "words": [
+            {
+              "boundingBox": "64,1028,2,24",
+              "text": "|"
+            },
+            {
+              "boundingBox": "94,1029,22,22",
+              "text": "背"
+            },
+            {
+              "boundingBox": "118,1029,22,22",
+              "text": "番"
+            },
+            {
+              "boundingBox": "142,1030,22,21",
+              "text": "号"
+            },
+            {
+              "boundingBox": "166,1030,20,20",
+              "text": "を"
+            },
+            {
+              "boundingBox": "190,1030,23,21",
+              "text": "設"
+            },
+            {
+              "boundingBox": "213,1029,23,22",
+              "text": "定"
+            },
+            {
+              "boundingBox": "242,1030,16,20",
+              "text": "し"
+            },
+            {
+              "boundingBox": "262,1029,20,21",
+              "text": "た"
+            },
+            {
+              "boundingBox": "286,1031,20,19",
+              "text": "い"
+            },
+            {
+              "boundingBox": "310,1029,22,22",
+              "text": "選"
+            },
+            {
+              "boundingBox": "334,1029,22,22",
+              "text": "手"
+            },
+            {
+              "boundingBox": "367,1038,4,4",
+              "text": "・"
+            },
+            {
+              "boundingBox": "382,1031,20,20",
+              "text": "ス"
+            },
+            {
+              "boundingBox": "407,1029,19,22",
+              "text": "タ"
+            },
+            {
+              "boundingBox": "432,1035,17,15",
+              "text": "ッ"
+            },
+            {
+              "boundingBox": "456,1032,17,19",
+              "text": "フ"
+            },
+            {
+              "boundingBox": "478,1030,20,20",
+              "text": "を"
+            },
+            {
+              "boundingBox": "502,1029,22,22",
+              "text": "選"
+            },
+            {
+              "boundingBox": "527,1030,19,20",
+              "text": "ん"
+            },
+            {
+              "boundingBox": "550,1031,21,19",
+              "text": "で"
+            },
+            {
+              "boundingBox": "578,1029,13,22",
+              "text": "く"
+            },
+            {
+              "boundingBox": "598,1029,21,21",
+              "text": "だ"
+            },
+            {
+              "boundingBox": "623,1029,19,21",
+              "text": "さ"
+            },
+            {
+              "boundingBox": "646,1031,20,19",
+              "text": "い"
+            },
+            {
+              "boundingBox": "669,1044,8,8",
+              "text": "。"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "modelVersion": "2021-04-01"
+}

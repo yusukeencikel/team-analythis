@@ -1,0 +1,2 @@
+class RealTeamStat < ApplicationRecord
+end

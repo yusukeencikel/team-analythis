@@ -1,0 +1,26 @@
+<tr class="hover:bg-gray-50">
+  <td class="p-2 font-semibold sticky left-0 bg-white hover:bg-gray-50 z-10" style="min-width: 200px;">
+    <%= select_tag "batting_stats[#{index}][player_id]", options_from_collection_for_select(players, :id, :name, stat.player_id), include_blank: '選手を選択', required: true, class: "w-full p-2 border rounded-lg bg-white" %>
+  </td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][batting_order]", stat.batting_order, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= select_tag "batting_stats[#{index}][fielding_position]", options_for_select(["投", "捕", "一", "二", "三", "遊", "左", "中", "右", "指", "打", "走"], stat.fielding_position), { include_blank: '-', class: "w-20 p-2 border rounded-lg bg-white" } %></td>
+  <td class="p-1"><%= select_tag "batting_stats[#{index}][participation_type]", options_for_select(["先発", "代打", "代走", "守備", "中継"], stat.participation_type), { include_blank: '-', class: "w-24 p-2 border rounded-lg bg-white" } %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][at_bats]", stat.at_bats, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][hits]", stat.hits, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][doubles]", stat.doubles, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][triples]", stat.triples, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][home_runs]", stat.home_runs, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][rbi]", stat.rbi, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][runs]", stat.runs, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][strikeouts]", stat.strikeouts, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][walks]", stat.walks, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][sacrifice_bunts]", stat.sacrifice_bunts, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][sacrifice_flies]", stat.sacrifice_flies, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][stolen_bases]", stat.stolen_bases, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][double_plays]", stat.double_plays, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1"><%= number_field_tag "batting_stats[#{index}][fielding_errors]", stat.fielding_errors, min: 0, class: "w-16 p-1 text-center border rounded" %></td>
+  <td class="p-1 text-center">
+    <button type="button" class="remove-row-btn text-red-500 hover:text-red-700 font-bold">×</button>
+  </td>
+</tr>
+

@@ -1,0 +1,19 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold"><%= @year %>年 タイトル受賞者</h1>
+    <%= link_to '編集', edit_award_path(@year), class: "bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition" %>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <% @awards.each do |name, awards| %>
+      <div class="mb-4">
+        <h2 class="text-xl font-semibold"><%= name %></h2>
+        <ul class="list-disc list-inside">
+          <% awards.each do |award| %>
+            <li><%= award.player.name %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </div>
+</div>

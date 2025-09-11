@@ -1,0 +1,32 @@
+ <%= render 'shared/form_error_messages', object: best_order %>
+
+    <%= form_with(model: best_order, class: "space-y-6") do |form| %>
+      <div>
+        <%= form.label :name, "オーダー名", class: "block font-semibold mb-1" %>
+        <%= form.text_field :name, required: true, class: "w-full p-2 border rounded-lg" %>
+      </div>
+
+      <div>
+        <h2 class="font-semibold mb-2">メンバー</h2>
+        <div class="space-y-2">
+          <%= form.fields_for :best_order_players do |member_form| %>
+            <div class="flex items-center gap-2 p-2 bg-gray-50 rounded">
+              <div class="w-16">
+                <%= member_form.select :batting_order, (1..9), {}, class: "w-full p-2 border rounded-lg bg-white" %>
+              </div>
+              <div class="flex-grow">
+                <%= member_form.collection_select :player_id, @players, :id, :name, { include_blank: '選手を選択' }, { required: true, class: "w-full p-2 border rounded-lg bg-white" } %>
+              </div>
+              <div class="w-24">
+                <%= member_form.select :fielding_position, ["投", "捕", "一", "二", "三", "遊", "左", "中", "右", "指"], {}, class: "w-full p-2 border rounded-lg bg-white" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 pt-4 border-t">
+        <%= form.submit "この内容で保存する", class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer" %>
+        <%= link_to "キャンセル", best_orders_path, class: "text-gray-600 hover:underline" %>
+      </div>
+    <% end %>

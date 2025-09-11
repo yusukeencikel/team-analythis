@@ -1,0 +1,264 @@
+<div class="max-w-7xl mx-auto bg-white rounded-lg shadow-md p-6 space-y-8">
+  <%# --- ヘッダー --- %>
+  <div class="flex justify-between items-start">
+    <div>
+      <h1 class="text-3xl font-bold flex items-center gap-3">
+        <span>試合結果</span>
+        <%= link_to toggle_favorite_game_path(@game), data: { turbo_method: :patch }, class: "favorite-star #{'favorited' if @game.is_favorite}", style: "text-decoration: none; font-size: 1.5rem;" do %>
+          <%= @game.is_favorite ? '★' : '☆' %>
+        <% end %>
+      </h1>
+      <div class="text-md text-gray-600 mt-1">
+        <span><%= format_date_with_day(@game.game_date) %></span> |
+        <span><%= @game.opponent.name %></span> |
+        <span><%= @game.stadium&.name %></span>
+      </div>
+    </div>
+    <div class="text-right">
+      <%= link_to 'この試合を編集', edit_game_path(@game), class: "text-green-600 hover:underline" %>
+    </div>
+  </div>
+
+  <%# --- スコアボード --- %>
+  <div class="bg-gray-800 text-white rounded-lg shadow-lg p-4 mb-6 font-mono">
+    
+    <%# ▼▼▼【ここから修正】▼▼▼ %>
+    <%# 先攻・後攻に応じて、上段(top)と下段(bottom)のチーム情報を振り分ける %>
+    <% if @game.home_away == '後攻' %>
+      <%# 自チームが後攻(ホーム)の場合 %>
+      <% top_team = @game.opponent %>
+      <% top_scores = @game.opponent_display_scores %>
+      <% top_total_score = @game.opponent_score %>
+      <% top_hits = @game.opponent_hits %>
+      <% top_errors = @game.opponent_errors %>
+
+      <% bottom_team = @our_team %>
+      <% bottom_scores = @game.our_display_scores %>
+      <% bottom_total_score = @game.our_score %>
+      <% bottom_hits = @game.our_hits %>
+      <% bottom_errors = @game.our_errors %>
+    <% else %>
+      <%# 自チームが先攻(ビジター)の場合 %>
+      <% top_team = @our_team %>
+      <% top_scores = @game.our_display_scores %>
+      <% top_total_score = @game.our_score %>
+      <% top_hits = @game.our_hits %>
+      <% top_errors = @game.our_errors %>
+
+      <% bottom_team = @game.opponent %>
+      <% bottom_scores = @game.opponent_display_scores %>
+      <% bottom_total_score = @game.opponent_score %>
+      <% bottom_hits = @game.opponent_hits %>
+      <% bottom_errors = @game.opponent_errors %>
+    <% end %>
+
+    <% total_innings = [top_scores.size, bottom_scores.size, 9].max %>
+    <%# ▲▲▲【ここまで修正】▲▲▲ %>
+
+    <table class="w-full border-separate" style="border-spacing: 0 0.5rem;">
+      <%# ヘッダー %>
+      <thead>
+        <tr class="text-sm text-gray-400">
+          <th class="w-2/12 text-left font-normal">TEAM</th>
+          <% total_innings.times do |i| %>
+            <th class="w-[4%] font-normal"><%= i + 1 %></th>
+          <% end %>
+          <th class="w-[5%] font-bold text-base">R</th>
+          <th class="w-[5%] font-bold text-base">H</th>
+          <th class="w-[5%] font-bold text-base">E</th>
+        </tr>
+      </thead>
+      <%# ボディ %>
+      <tbody>
+        <%# ▼▼▼【ここから修正】▼▼▼ %>
+        <%# 先攻チーム (上段) %>
+        <tr class="bg-gray-900 rounded-md">
+          <td class="p-3 text-left font-semibold"><%= top_team.name %></td>
+          <% total_innings.times do |i| %>
+            <td class="p-3 text-2xl font-bold text-center"><%= top_scores[i].to_s.presence || '' %></td>
+          <% end %>
+          <td class="p-3 text-3xl font-bold text-center text-yellow-400"><%= top_total_score %></td>
+          <td class="p-3 text-3xl font-bold text-center"><%= top_hits %></td>
+          <td class="p-3 text-3xl font-bold text-center"><%= top_errors %></td>
+        </tr>
+        <%# 後攻チーム (下段) %>
+        <tr class="bg-gray-900 rounded-md">
+          <td class="p-3 text-left font-semibold"><%= bottom_team.name %></td>
+          <% total_innings.times do |i| %>
+            <td class="p-3 text-2xl font-bold text-center"><%= bottom_scores[i].to_s.presence || '' %></td>
+          <% end %>
+          <td class="p-3 text-3xl font-bold text-center text-yellow-400"><%= bottom_total_score %></td>
+          <td class="p-3 text-3xl font-bold text-center"><%= bottom_hits %></td>
+          <td class="p-3 text-3xl font-bold text-center"><%= bottom_errors %></td>
+        </tr>
+        <%# ▲▲▲【ここまで修正】▲▲▲ %>
+      </tbody>
+    </table>
+  </div>
+  
+  <%# --- 責任投手・本塁打・バッテリー情報 --- %>
+  <div class="text-sm border rounded-lg p-4 space-y-2 bg-gray-50">
+  
+    <% if @game.winning_pitcher || @game.losing_pitcher || @game.saving_pitcher %>
+      <div class="flex items-baseline">
+        <strong class="w-20 shrink-0 font-semibold">責任投手:</strong>
+        <div>
+          <% if @game.winning_pitcher %><span>[勝] <%= link_to @game.winning_pitcher.name, player_path(@game.winning_pitcher), class: "hover:underline" %> (<%= @game.winning_pitcher.cumulative_pitcher_record_up_to(@game) %>)</span><% end %>
+          <% if @game.losing_pitcher %><span class="ml-2">[敗] <%= link_to @game.losing_pitcher.name, player_path(@game.losing_pitcher), class: "hover:underline" %> (<%= @game.losing_pitcher.cumulative_pitcher_record_up_to(@game) %>)</span><% end %>
+          <% if @game.saving_pitcher %><span class="ml-2">[S] <%= link_to @game.saving_pitcher.name, player_path(@game.saving_pitcher), class: "hover:underline" %> (<%= @game.saving_pitcher.cumulative_pitcher_record_up_to(@game) %>)</span><% end %>
+        </div>
+      </div>
+    <% end %>
+    <% if @game.home_run_hitters.any? %>
+      <div class="flex items-baseline">
+        <strong class="w-20 shrink-0 font-semibold">本塁打:</strong>
+        <div>
+            <% @game.home_run_hitters.each_with_index do |stat, i| %>
+              <%= link_to stat.player.name, player_path(stat.player), class: 'hover:underline' %>
+              <% previous_hrs = stat.player.cumulative_home_runs_up_to(@game) %>
+              <% hr_numbers = (1..stat.home_runs).map { |n| previous_hrs + n } %>
+              <%= " #{hr_numbers.map { |n| "#{n}号" }.join('、')}" %>
+              <%= ', ' unless i == @game.home_run_hitters.length - 1 %>
+            <% end %>
+          </div>
+      </div>
+      <% end %>
+          
+    <div class="flex items-baseline">
+      <strong class="w-20 shrink-0 font-semibold">バッテリー:</strong>
+      <div>
+        <% pitchers = @game.sorted_pitching_stats.map(&:player) %>
+        <% catchers = @game.batting_stats.where(fielding_position: '捕').includes(:player).map(&:player).uniq %>
+        <% if pitchers.any? %>
+          <%= safe_join(pitchers.map { |p| link_to(p.name, player_path(p), class: 'hover:underline') }, '、') %>
+          <% if catchers.any? %>
+            <span class="mx-1">-</span> <%= safe_join(catchers.map { |c| link_to(c.name, player_path(c), class: 'hover:underline') }, '、') %>
+          <% end %>
+        <% else %>
+          投手情報なし
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 成績入力ボタン --- %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <%= link_to '野手成績を編集', game_batting_stats_path(@game), class: "block w-full text-center bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition" %>
+    <%= link_to '投手成績を編集', game_pitching_stats_path(@game), class: "block w-full text-center bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition" %>
+  </div>
+
+  <%# --- 野手成績テーブル --- %>
+  <div class="border-t pt-6">
+    <h2 class="text-xl font-semibold mb-4">野手成績</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">打順</th>
+            <th class="p-2 text-center">守</th>
+            <th class="p-2 text-center">出場</th>
+            <th class="p-2 text-left">選手名</th>
+            <th class="p-2 text-center">打-安</th>
+            <th class="p-2 text-center">二</th>
+            <th class="p-2 text-center">三</th>
+            <th class="p-2 text-center">本</th>
+            <th class="p-2 text-center">点</th>
+            <th class="p-2 text-center">得</th>
+            <th class="p-2 text-center">三振</th>
+            <th class="p-2 text-center">四球</th>
+            <th class="p-2 text-center">犠打</th>
+            <th class="p-2 text-center">犠飛</th>
+            <th class="p-2 text-center">盗塁</th>
+            <th class="p-2 text-center">併殺</th>
+            <th class="p-2 text-center">失策</th>
+            <th class="p-2 text-center font-semibold">試合後打率</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <% @game.sorted_batting_stats.each do |stat| %>
+            <tr class="hover:bg-gray-50">
+              <td class="p-2"><%= stat.batting_order %></td>
+              <td class="p-2 text-center"><%= stat.fielding_position %></td>
+              <td class="p-2 text-center"><%= stat.participation_type %></td>
+              <td class="p-2 font-semibold flex items-center">
+                <% if stat.player.batting_hand == '右' %><span class="text-red-500 font-bold mr-1">R</span>
+                <% elsif stat.player.batting_hand == '左' %><span class="text-blue-500 font-bold mr-1">L</span>
+                <% elsif stat.player.batting_hand == '両' %><span class="text-green-500 font-bold mr-1">S</span>
+                <% end %>
+                <%= link_to stat.player.name, player_path(stat.player), class: "hover:underline" %>
+              </td>
+              <td class="p-2 text-center"><%= stat.at_bats %>-<%= stat.hits %></td>
+              <td class="p-2 text-center"><%= stat.doubles %></td>
+              <td class="p-2 text-center"><%= stat.triples %></td>
+              <td class="p-2 text-center"><%= stat.home_runs %></td>
+              <td class="p-2 text-center"><%= stat.rbi %></td>
+              <td class="p-2 text-center"><%= stat.runs %></td>
+              <td class="p-2 text-center"><%= stat.strikeouts %></td>
+              <td class="p-2 text-center"><%= stat.walks %></td>
+              <td class="p-2 text-center"><%= stat.sacrifice_bunts %></td>
+              <td class="p-2 text-center"><%= stat.sacrifice_flies %></td>
+              <td class="p-2 text-center"><%= stat.stolen_bases %></td>
+              <td class="p-2 text-center"><%= stat.double_plays %></td>
+              <td class="p-2 text-center"><%= stat.fielding_errors %></td>
+              <td class="p-2 text-center font-semibold text-blue-700"><%= stat.player.cumulative_batting_average_up_to(@game) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%# --- 投手成績テーブル --- %>
+  <div class="border-t pt-6">
+    <h2 class="text-xl font-semibold mb-4">投手成績</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 text-left">投手名</th>
+            <th class="p-2 text-center">結果</th>
+            <th class="p-2 text-center">回</th>
+            <th class="p-2 text-center">打者</th>
+            <th class="p-2 text-center">球数</th>
+            <th class="p-2 text-center">被安打</th>
+            <th class="p-2 text-center">奪三振</th>
+            <th class="p-2 text-center">与四球</th>
+            <th class="p-2 text-center">失点</th>
+            <th class="p-2 text-center">自責点</th>
+            <th class="p-2 text-center">QS</th>
+            <th class="p-2 text-center">HQS</th>
+            <th class="p-2 text-center font-semibold">試合後防御率</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <% @game.sorted_pitching_stats.each do |stat| %>
+            <tr class="hover:bg-gray-50">
+              <td class="p-2 font-semibold flex items-center">
+                <% if stat.player.throwing_hand == '右' %><span class="text-red-500 font-bold mr-1">R</span>
+                <% elsif stat.player.throwing_hand == '左' %><span class="text-blue-500 font-bold mr-1">L</span>
+                <% end %>
+                <%= link_to stat.player.name, player_path(stat.player), class: "hover:underline" %>
+              </td>
+              <td class="p-2 text-center"><%= stat.pitcher_result %></td>
+              <td class="p-2 text-center"><%= stat.innings_pitched %></td>
+              <td class="p-2 text-center"><%= stat.batters_faced %></td>
+              <td class="p-2 text-center"><%= stat.pitches_thrown %></td>
+              <td class="p-2 text-center"><%= stat.hits_allowed %></td>
+              <td class="p-2 text-center"><%= stat.strikeouts %></td>
+              <td class="p-2 text-center"><%= stat.walks %></td>
+              <td class="p-2 text-center"><%= stat.runs_allowed %></td>
+              <td class="p-2 text-center"><%= stat.earned_runs %></td>
+              <td class="p-2 text-center"><%= stat.qs? ? "○" : "-" %></td>
+              <td class="p-2 text-center"><%= stat.hqs? ? "○" : "-" %></td>
+              <td class="p-2 text-center font-semibold text-blue-700"><%= stat.player.cumulative_earned_run_average_up_to(@game) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="mt-6 border-t pt-4">
+    <%= link_to '≪ 試合一覧へ戻る', games_path, class: "text-blue-600 hover:underline" %>
+  </div>
+</div>

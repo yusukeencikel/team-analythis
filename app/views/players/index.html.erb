@@ -1,0 +1,51 @@
+<div data-controller="bulk-actions">
+  <div class="flex justify-between items-center mb-6">
+    <% if request.path == retired_players_path %>
+      <h1 class="text-2xl font-bold">引退・退団選手名鑑</h1>
+    <% else %>
+      <h1 class="text-2xl font-bold">現役選手名鑑</h1>
+    <% end %>
+    <div>
+      <button type="button" data-action="click->bulk-actions#enterEditMode" data-bulk-actions-target="editButton" class="bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition">一括編集</button>
+      <%= link_to '＋ 新規選手を登録', new_player_path, class: "bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition ml-2" %>
+    </div>
+  </div>
+
+  <!-- 一括操作パネル (編集モードで表示) -->
+  <div data-bulk-actions-target="editPanel" class="hidden flex items-center gap-4 mb-4 p-4 bg-gray-100 rounded-lg">
+    <label class="flex items-center">
+      <input type="checkbox" data-action="change->bulk-actions#toggleAll" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+      <span class="ml-2 text-sm font-medium text-gray-700">すべて選択</span>
+    </label>
+    <button type="button" data-action="click->bulk-actions#submitEdit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">選択した選手を編集</button>
+    <button type="button" data-action="click->bulk-actions#destroyAll" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition">選択した選手を削除</button>
+    <button type="button" data-action="click->bulk-actions#cancelEditMode" class="text-gray-600 hover:underline ml-auto">キャンセル</button>
+  </div>
+
+  <%= form_with url: edit_all_players_path, method: :get, id: "bulk-edit-form" do |form| %>
+    <div class="space-y-8">
+      <% @position_order.each do |position| %>
+        <% if @grouped_players[position].present? %>
+          <div>
+            <h2 class="text-xl font-semibold mb-3 text-gray-700 border-b pb-2">【<%= position %>】</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+              <% @grouped_players[position].each do |player| %>
+                <label class="relative text-center p-3 border rounded-lg bg-white shadow-sm hover:bg-gray-50 hover:shadow-md transition cursor-pointer">
+                  <input type="checkbox" name="player_ids[]" value="<%= player.id %>" data-bulk-actions-target="checkbox" class="hidden absolute top-2 left-2 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  <%= link_to player_path(player), class: "no-underline text-gray-800 block", data: { "bulk-actions-target": "playerLink" } do %>
+                    <p class="text-2xl font-bold text-gray-500"><%= player.jersey_number %></p>
+                    <p class="font-semibold mt-1 truncate"><%= player.name %></p>
+                  <% end %>
+                </label>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with url: destroy_all_players_path, method: :delete, id: "bulk-delete-form", class: "hidden" do |form| %>
+    <%# JavaScript will populate this form %>
+  <% end %>
+</div>
