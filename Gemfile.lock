@@ -334,7 +334,7 @@ GEM
       date
       stringio
     public_suffix (6.0.2)
-    puma (6.6.1)
+    puma (7.0.4)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
@@ -548,7 +548,7 @@ DEPENDENCIES
   mini_magick
   pg (~> 1.1)
   propshaft
-  puma (~> 6.4)
+  puma (~> 7.0)
   rails (~> 7.2.0.beta2)
   roo (~> 2.10)
   rspec-rails (~> 6.1)
