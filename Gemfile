@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gem "rails", "~> 7.2.0.beta2"
 gem "pg", "~> 1.1"
-gem "puma", "~> 6.4"
+gem "puma", "~> 7.1"
 gem "image_processing", "~> 1.2"
 gem "propshaft"
 gem "jbuilder"
